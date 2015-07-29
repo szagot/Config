@@ -13,7 +13,7 @@ class Uri
     const
         RETORNO_OBJ = true,
         RETORNO_ARRAY = false;
-    
+
     private
         $uri,
         $caminho = array(),
@@ -31,13 +31,13 @@ class Uri
     {
         // Pega a URI removendo a barra inicial se houver
         $this->uri = preg_replace( '/^\//', '', urldecode( $_SERVER['REQUEST_URI'] ) );
-        
+
         // Pega o body
         $this->body = json_decode( file_get_contents('php://input') );
-        
+
         // Separa os parâmetros (Query String) da URI 
         @list( $caminho, $parametros ) = explode( '?', $this->uri );
-        
+
         // Remove a Raiz do caminho local quando informada
         if(
             ! empty( $raizLocal ) && is_string( $raizLocal ) &&
@@ -46,15 +46,15 @@ class Uri
             $caminho = preg_replace( '/^' . addcslashes( $raizLocal, '/' ) .'\/?/', '', $caminho );
             $this->raiz = preg_replace( "/(^\/|\/$)/", '', $raizLocal );
         }
-        
+
         // Remove a Raiz do caminho quando informada
         if( ! empty( $raiz ) && is_string( $raiz ) ){
             $caminho = preg_replace( '/^' . addcslashes( $raiz, '/' ) .'\/?/', '', $caminho );
             $this->raiz = ( $this->raiz ? "$this->raiz/" : '' ) . preg_replace( "/(^\/|\/$)/", '', $raiz );
         }
-        
+
         $this->raiz .= '/';
-        
+
         // Separa a URI nas suas partes principais
         $caminhoDividido = explode( '/', $caminho );
         if( count( $caminhoDividido ) > 0 && is_array( $caminhoDividido ) )
@@ -69,28 +69,28 @@ class Uri
                     case 2:
                         $this->caminho['detalhe'] = $caminho;
                         break;
-                    default: 
+                    default:
                         $this->caminho['outros'][] = $caminho;
                 endswitch;
-        
+
         // Pega os parâmetros da Query String (GET)
         if( isset( $parametros ) && ! empty( $parametros ) )
-                foreach( explode( '&', $parametros ) as $campos ):
-                    @list( $campo, $valor ) = explode( '=', $campos );
-                    if( isset( $campo ) && ! empty( $campo ) )
-                        // Se o valor for nulo, recebe true como indicação que o parâmetro existe
-                        $this->parametros[ $campo ] = ( $valor === NULL ) ? true : $valor;
-                endforeach;
-        
+            foreach( explode( '&', $parametros ) as $campos ):
+                @list( $campo, $valor ) = explode( '=', $campos );
+                if( isset( $campo ) && ! empty( $campo ) )
+                    // Se o valor for nulo, recebe true como indicação que o parâmetro existe
+                    $this->parametros[ $campo ] = ( $valor === NULL ) ? true : $valor;
+            endforeach;
+
         // Pega os parâmetros da postagem se houver
         if( is_array( $_POST ) && count( $_POST ) > 0 )
             foreach( $_POST as $campo => $valor )
                 $this->parametros[ $campo ] = $valor;
     }
-    
+
     /**
      * Retorna o caminho da URI
-     * 
+     *
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
      * @return array Caminho da URI
      */
@@ -103,13 +103,13 @@ class Uri
                 $caminho->$campo = $valor;
         } else
             $caminho = $this->caminho;
-        
+
         return $caminho;
     }
-    
+
     /**
      * Retorna os parâmetros (Query String + POST) da URI
-     * 
+     *
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
      * @return array Parâmetros da URI
      */
@@ -122,10 +122,10 @@ class Uri
                 $parametros->$campo = $valor;
         } else
             $parametros = $this->parametros;
-        
+
         return $parametros;
     }
-    
+
     /**
      * Retorna o conteúdo do Body em caso de requisição POST via http request
      *
@@ -135,10 +135,10 @@ class Uri
     {
         return $this->body;
     }
-    
+
     /**
      * Retorna o caminho e mais os parâmetros (Query String + POST) da URI
-     * 
+     *
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
      * @return array Caminho da URI completo com os parâmetros se houverem
      */
@@ -152,18 +152,18 @@ class Uri
                 $parametros->$campo = $valor;
         } else
             $parametros = $params;
-        
-        return $params;
+
+        return $parametros;
     }
-    
+
     /**
      * Pega a raiz da URI
      *
      * @return string Raiz
      */
-    public function getRaiz() 
+    public function getRaiz()
     {
-        return $this->raiz;   
+        return $this->raiz;
     }
-    
+
 }
