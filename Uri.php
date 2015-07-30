@@ -30,26 +30,26 @@ class Uri
     public function __construct( $raiz = '', $raizLocal = '' )
     {
         // Pega a URI removendo a barra inicial se houver
-        $this->uri = preg_replace( '/^\//', '', urldecode( $_SERVER['REQUEST_URI'] ) );
+        $this->uri = preg_replace( '/^\//', '', urldecode( $_SERVER[ 'REQUEST_URI' ] ) );
 
         // Pega o body
-        $this->body = json_decode( file_get_contents('php://input') );
+        $this->body = json_decode( file_get_contents( 'php://input' ) );
 
         // Separa os parâmetros (Query String) da URI 
         @list( $caminho, $parametros ) = explode( '?', $this->uri );
 
         // Remove a Raiz do caminho local quando informada
-        if(
+        if (
             ! empty( $raizLocal ) && is_string( $raizLocal ) &&
-            preg_match( '/localhost|127\.0\.0\.1/i', $_SERVER['HTTP_HOST'] )
-        ){
-            $caminho = preg_replace( '/^' . addcslashes( $raizLocal, '/' ) .'\/?/', '', $caminho );
+            preg_match( '/localhost|127\.0\.0\.1/i', $_SERVER[ 'HTTP_HOST' ] )
+        ) {
+            $caminho = preg_replace( '/^' . addcslashes( $raizLocal, '/' ) . '\/?/', '', $caminho );
             $this->raiz = preg_replace( "/(^\/|\/$)/", '', $raizLocal );
         }
 
         // Remove a Raiz do caminho quando informada
-        if( ! empty( $raiz ) && is_string( $raiz ) ){
-            $caminho = preg_replace( '/^' . addcslashes( $raiz, '/' ) .'\/?/', '', $caminho );
+        if ( ! empty( $raiz ) && is_string( $raiz ) ) {
+            $caminho = preg_replace( '/^' . addcslashes( $raiz, '/' ) . '\/?/', '', $caminho );
             $this->raiz = ( $this->raiz ? "$this->raiz/" : '' ) . preg_replace( "/(^\/|\/$)/", '', $raiz );
         }
 
@@ -57,34 +57,34 @@ class Uri
 
         // Separa a URI nas suas partes principais
         $caminhoDividido = explode( '/', $caminho );
-        if( count( $caminhoDividido ) > 0 && is_array( $caminhoDividido ) )
-            foreach( $caminhoDividido as $index => $caminho )
-                switch( $index ):
+        if ( count( $caminhoDividido ) > 0 && is_array( $caminhoDividido ) )
+            foreach ( $caminhoDividido as $index => $caminho )
+                switch ( $index ):
                     case 0:
-                        $this->caminho['pagina'] = $caminho;
+                        $this->caminho[ 'pagina' ] = $caminho;
                         break;
                     case 1:
-                        $this->caminho['opcao'] = $caminho;
+                        $this->caminho[ 'opcao' ] = $caminho;
                         break;
                     case 2:
-                        $this->caminho['detalhe'] = $caminho;
+                        $this->caminho[ 'detalhe' ] = $caminho;
                         break;
                     default:
-                        $this->caminho['outros'][] = $caminho;
+                        $this->caminho[ 'outros' ][] = $caminho;
                 endswitch;
 
         // Pega os parâmetros da Query String (GET)
-        if( isset( $parametros ) && ! empty( $parametros ) )
-            foreach( explode( '&', $parametros ) as $campos ):
+        if ( isset( $parametros ) && ! empty( $parametros ) )
+            foreach ( explode( '&', $parametros ) as $campos ):
                 @list( $campo, $valor ) = explode( '=', $campos );
-                if( isset( $campo ) && ! empty( $campo ) )
+                if ( isset( $campo ) && ! empty( $campo ) )
                     // Se o valor for nulo, recebe true como indicação que o parâmetro existe
                     $this->parametros[ $campo ] = ( $valor === NULL ) ? true : $valor;
             endforeach;
 
         // Pega os parâmetros da postagem se houver
-        if( is_array( $_POST ) && count( $_POST ) > 0 )
-            foreach( $_POST as $campo => $valor )
+        if ( is_array( $_POST ) && count( $_POST ) > 0 )
+            foreach ( $_POST as $campo => $valor )
                 $this->parametros[ $campo ] = $valor;
     }
 
@@ -97,9 +97,9 @@ class Uri
     public function getCaminho( $obj = self::RETORNO_OBJ )
     {
         // Retorno em forma de objeto ou array?
-        if( $obj ) {
+        if ( $obj ) {
             $caminho = new \stdClass;
-            foreach( $this->caminho as $campo => $valor )
+            foreach ( $this->caminho as $campo => $valor )
                 $caminho->$campo = $valor;
         } else
             $caminho = $this->caminho;
@@ -116,9 +116,9 @@ class Uri
     public function getParametros( $obj = self::RETORNO_OBJ )
     {
         // Retorno em forma de objeto ou array?
-        if( $obj ) {
+        if ( $obj ) {
             $parametros = new \stdClass;
-            foreach( $this->parametros as $campo => $valor )
+            foreach ( $this->parametros as $campo => $valor )
                 $parametros->$campo = $valor;
         } else
             $parametros = $this->parametros;
@@ -146,9 +146,9 @@ class Uri
     {
         // Retorno em forma de objeto ou array?
         $params = array_merge( $this->caminho, $this->parametros );
-        if( $obj ) {
+        if ( $obj ) {
             $parametros = new \stdClass;
-            foreach( $params as $campo => $valor )
+            foreach ( $params as $campo => $valor )
                 $parametros->$campo = $valor;
         } else
             $parametros = $params;
@@ -164,6 +164,22 @@ class Uri
     public function getRaiz()
     {
         return $this->raiz;
+    }
+
+    /**
+     * Pega o servidor da URL
+     *
+     * @param boolean $comProtoloco = Deve ir com protocolo? (http|https)
+     * @return string
+     */
+    public function getServer( $comProtoloco = true )
+    {
+
+        $protocol = preg_match( '/https/i', $_SERVER[ 'SERVER_PROTOCOL' ] ) ? 'https://' : 'http://';
+        $server = $_SERVER[ 'HTTP_HOST' ] . '/';
+
+        return ( $comProtoloco ? $protocol : '/' ) . $server;
+
     }
 
 }
