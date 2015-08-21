@@ -143,7 +143,12 @@ class Uri
     }
 
     /**
-     * Retorna o caminho da URI
+     * Retorna o caminho da URI em um array ou objeto, conforme segue:
+     *  URI: http://minhapagina.com/pagina/opcao/detalhe/outros-0/outros-1/?param1=valor
+     *      $this->getCaminho()->pagina = Página atual, primeira parte da URI
+     *      $this->getCaminho()->opcao = Opções da página, segunda parte da uri
+     *      $this->getCaminho()->detalhe = Detalhe da opção, terceira parte da uri
+     *      $this->getCaminho()->outros[x] = Da quarta parte em diante é agrupado em outros
      *
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
      * @return array Caminho da URI
@@ -163,6 +168,8 @@ class Uri
 
     /**
      * Retorna os parâmetros (Query String + POST) da URI
+     *  URI: http://minhapagina.com/pagina/opcao/detalhe/outros-0/outros-1/?param1=valor
+     *      $this->getParametros()->param1 = Pega o valor do param1
      *
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
      * @return array Parâmetros da URI
@@ -181,17 +188,14 @@ class Uri
     }
 
     /**
-     * Retorna o conteúdo do Body em caso de requisição POST via http request
-     *
-     * @return array Parâmetros da URI
-     */
-    public function getBody()
-    {
-        return $this->body;
-    }
-
-    /**
      * Retorna o caminho e mais os parâmetros (Query String + POST) da URI
+     * É a soma de $this->getCaminho() e $this->getParametros()
+     *  URI: http://minhapagina.com/pagina/opcao/detalhe/outros-0/outros-1/?param1=valor
+     *      $this->getUri()->pagina = Página atual, primeira parte da URI
+     *      $this->getUri()->opcao = Opções da página, segunda parte da uri
+     *      $this->getUri()->detalhe = Detalhe da opção, terceira parte da uri
+     *      $this->getUri()->outros[x] = Da quarta parte em diante é agrupado em outros
+     *      $this->getUri()->param1 = Pega o valor do param1
      *
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
      * @return array Caminho da URI completo com os parâmetros se houverem
@@ -208,6 +212,16 @@ class Uri
             $parametros = $params;
 
         return $parametros;
+    }
+
+    /**
+     * Retorna o conteúdo do Body em caso de requisição POST via http request
+     *
+     * @return array Parâmetros da URI
+     */
+    public function getBody()
+    {
+        return $this->body;
     }
 
     /**
