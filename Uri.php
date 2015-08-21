@@ -39,10 +39,7 @@ class Uri
         @list( $caminho, $parametros ) = explode( '?', $this->uri );
 
         // Remove a Raiz do caminho local quando informada
-        if (
-            ! empty( $raizLocal ) && is_string( $raizLocal ) &&
-            preg_match( '/localhost|127\.0\.0\.1/i', $_SERVER[ 'HTTP_HOST' ] )
-        ) {
+        if ( ! empty( $raizLocal ) && is_string( $raizLocal ) && $this->eLocal() ) {
             $caminho = preg_replace( '/^' . addcslashes( $raizLocal, '/' ) . '\/?/', '', $caminho );
             $this->raiz = preg_replace( "/(^\/|\/$)/", '', $raizLocal );
         }
@@ -86,6 +83,63 @@ class Uri
         if ( is_array( $_POST ) && count( $_POST ) > 0 )
             foreach ( $_POST as $campo => $valor )
                 $this->parametros[ $campo ] = $valor;
+    }
+
+    /**
+     * Verifica se está executando o script localmente
+     * @return boolean
+     */
+    public function eLocal()
+    {
+        return preg_match( '/localhost|127\.0\.0\.1/i', $_SERVER[ 'HTTP_HOST' ] );
+    }
+
+    /**
+     * Adiciona (por padrão) ou remove o WWW da URL
+     * @param bool $add = Deve adicionar ou remover o WWW?
+     * @return bool O retorno FALSE indica que não foi necessário nenhuma alteração na URL. Evidentemente,
+     *              se foi necessária uma alteração, o navegador irá restartar a página.
+     */
+    public function addWWW( $add = true )
+    {
+
+        // Se for local, não faz nada
+        if ( $this->eLocal() )
+            return false;
+
+        $server = $this->getServer( false );
+
+        // É pra remover o WWW ou pra adicionar?
+        if ( $add ) {
+            // Possui o WWW?
+            if ( ! preg_match( '/^\/{0,2}www\./i', $server ) ) {
+                // Tenta redirecionar a URL com WWW
+                if ( ! headers_sent() )
+                    header( 'Location: ' . preg_replace( '/^(https?:\/\/)/', '$1www.', $this->getServer( true, true ) ) );
+                return true;
+            }
+
+            return false;
+        } else {
+            // Não possui o WWW?
+            if ( preg_match( '/^\/{0,2}www\./i', $server ) ) {
+                // Tenta redirecionar a URL sem WWW
+                if ( ! headers_sent() )
+                    header( 'Location: ' . preg_replace( '/\/\/www\./i', '//', $this->getServer( true, true ) ) );
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    /**
+     * Remove o WWW da URL
+     * Obs.: Atalho para $this->addWWW(), porém com parâmetros para remoção do WWW
+     */
+    public function removeWWW()
+    {
+        $this->addWWW( false );
     }
 
     /**
@@ -157,28 +211,41 @@ class Uri
     }
 
     /**
-     * Pega a raiz da URI
+     * Pega a raiz da URI, com ou sem servidor
      *
+     * @param boolean $comServer = Deve ir com servidor?
+     * @param boolean $comProtoloco = Deve ir com protocolo (http|https) ou apenas a incação de servidor (//)?
      * @return string Raiz
      */
-    public function getRaiz()
+    public function getRaiz( $comServer = false, $comProtoloco = false )
     {
-        return $this->raiz;
+        return
+            ( $comServer
+                // Com servidor
+                ? $this->getServer( $comProtoloco )
+                // Apenas raiz
+                : preg_replace( '/\/+/', '/', ( '/' . $this->raiz ) )
+            );
     }
 
     /**
      * Pega o servidor da URL
      *
-     * @param boolean $comProtoloco = Deve ir com protocolo? (http|https)
+     * @param boolean $comProtoloco = Deve ir com protocolo (http|https) ou apenas a incação de servidor (//)?
+     * @param boolean $comUri = Deve ir com o restante da URI?
      * @return string
      */
-    public function getServer( $comProtoloco = true )
+    public function getServer( $comProtoloco = false, $comUri = false )
     {
 
         $protocol = preg_match( '/https/i', $_SERVER[ 'SERVER_PROTOCOL' ] ) ? 'https://' : 'http://';
         $server = $_SERVER[ 'HTTP_HOST' ] . '/';
 
-        return ( $comProtoloco ? $protocol : '/' ) . $server;
+        return
+            // Com protocolo?
+            ( $comProtoloco ? $protocol : '//' ) .
+            // Evita duplicidade nas barras
+            preg_replace( '/\/+/', '/', ( $server . ( $comUri ? $this->uri : $this->raiz ) ) );
 
     }
 
