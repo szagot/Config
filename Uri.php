@@ -11,8 +11,17 @@ namespace Config;
 class Uri
 {
     const
+        // Tipos de Retorno
         RETORNO_OBJ = true,
-        RETORNO_ARRAY = false;
+        RETORNO_ARRAY = false,
+        // Parâmetros de Servidor
+        INCLUI_SERVER = true,
+        NAO_INCLUI_SERVER = false,
+        SERVER_COM_PROTOCOLO = true, # http|https
+        SERVER_SEM_PROTOCOLO = false, # http|https
+        SERVER_COM_URI = true, # Com caminho completo
+        SERVER_SEM_URI = false # Sem caminho completo
+    ;
 
     private
         $uri,
@@ -24,8 +33,8 @@ class Uri
     /**
      * Método Construtor
      *
-     * @param string $raiz Raiz da loja
-     * @param string $raizLocal Raiz da loja quando executado em localhost
+     * @param string $raiz Raiz do site
+     * @param string $raizLocal Raiz do site quando executado em localhost
      */
     public function __construct( $raiz = '', $raizLocal = '' )
     {
@@ -35,8 +44,8 @@ class Uri
         // Pega o body
         $this->body = json_decode( file_get_contents( 'php://input' ) );
 
-        // Separa os parâmetros (Query String) da URI 
-        @list( $caminho, $parametros ) = explode( '?', $this->uri );
+        // Separa os parâmetros (Query String) da URI, pegando tudo o que não for GET
+        list( $caminho ) = explode( '?', $this->uri );
 
         // Remove a Raiz do caminho local quando informada
         if ( ! empty( $raizLocal ) && is_string( $raizLocal ) && $this->eLocal() ) {
@@ -70,19 +79,15 @@ class Uri
                         $this->caminho[ 'outros' ][] = $caminho;
                 endswitch;
 
-        // Pega os parâmetros da Query String (GET)
-        if ( isset( $parametros ) && ! empty( $parametros ) )
-            foreach ( explode( '&', $parametros ) as $campos ):
-                @list( $campo, $valor ) = explode( '=', $campos );
-                if ( isset( $campo ) && ! empty( $campo ) )
-                    // Se o valor for nulo, recebe true como indicação que o parâmetro existe
-                    $this->parametros[ $campo ] = ( $valor === NULL ) ? true : $valor;
-            endforeach;
-
-        // Pega os parâmetros da postagem se houver
+        // Pega os parâmetros get e post se houverem
+        $get = filter_input_array( INPUT_GET );
         $post = filter_input_array( INPUT_POST );
-        if( $post )
-            $this->parametros= array_merge( $this->parametros, $post );
+        if ( $get && $post )
+            $this->parametros = array_merge( $get, $post );
+        elseif( $get )
+            $this->parametros = $get;
+        elseif ( $post )
+            $this->parametros = $post;
     }
 
     /**
@@ -96,9 +101,11 @@ class Uri
 
     /**
      * Adiciona (por padrão) ou remove o WWW da URL
-     * @param bool $add = Deve adicionar ou remover o WWW?
-     * @return bool O retorno FALSE indica que não foi necessário nenhuma alteração na URL. Evidentemente,
-     *              se foi necessária uma alteração, o navegador irá restartar a página.
+     * Este método deve ser chamado ANTES de qualquer saída em tela
+     *
+     * @param bool $add Deve adicionar ou remover o WWW?
+     * @return bool O retorno FALSE indica que não foi necessário nenhuma alteração na URL. Evidentemente, se foi
+     *              necessária uma alteração, o servidor irá restartar a requisição adicionando ou removendo o WWW.
      */
     public function addWWW( $add = true )
     {
@@ -107,7 +114,7 @@ class Uri
         if ( $this->eLocal() )
             return false;
 
-        $server = $this->getServer( false );
+        $server = $this->getServer();
 
         // É pra remover o WWW ou pra adicionar?
         if ( $add ) {
@@ -115,26 +122,28 @@ class Uri
             if ( ! preg_match( '/^\/{0,2}www\./i', $server ) ) {
                 // Tenta redirecionar a URL com WWW
                 if ( ! headers_sent() )
-                    header( 'Location: ' . preg_replace( '/^(https?:\/\/)/', '$1www.', $this->getServer( true, true ) ) );
+                    header( 'Location: ' . preg_replace( '/^(https?:\/\/)/', '$1www.', $this->getServer( SELF::SERVER_COM_PROTOCOLO, SELF::SERVER_COM_URI ) ) );
                 return true;
             }
-
+            // Não foi necessária alteração
             return false;
         } else {
             // Não possui o WWW?
             if ( preg_match( '/^\/{0,2}www\./i', $server ) ) {
                 // Tenta redirecionar a URL sem WWW
                 if ( ! headers_sent() )
-                    header( 'Location: ' . preg_replace( '/\/\/www\./i', '//', $this->getServer( true, true ) ) );
+                    header( 'Location: ' . preg_replace( '/\/\/www\./i', '//', $this->getServer( SELF::SERVER_COM_PROTOCOLO, SELF::SERVER_COM_URI ) ) );
                 return true;
             }
-
+            // Não foi necessária alteração
             return false;
         }
     }
 
     /**
      * Remove o WWW da URL
+     * Este método deve ser chamado ANTES de qualquer saída em tela
+     *
      * Obs.: Atalho para $this->addWWW(), porém com parâmetros para remoção do WWW
      */
     public function removeWWW()
@@ -167,7 +176,8 @@ class Uri
     }
 
     /**
-     * Retorna os parâmetros (Query String + POST) da URI
+     * Pega os parâmetros (Query String + POST) da URI de maneira segura, todos com valor convertidos em string
+     *
      *  URI: http://minhapagina.com/pagina/opcao/detalhe/outros-0/outros-1/?param1=valor
      *      $this->getParametros()->param1 = Pega o valor do param1
      *
@@ -185,6 +195,34 @@ class Uri
             $parametros = $this->parametros;
 
         return $parametros;
+    }
+
+    /**
+     * Pega um parâmetro específico do post ou do get de forma segura, priorizando posts.
+     * É possível especificar um tipo de filtro para o parâmetro.
+     * Caso não especificado, retorna como string por padrão (FILTER_DEFAULT).
+     *
+     * @param string $param Nome do campo a ser pego
+     * @param int $tipo Tipo esperado para o valor daquele campo (Ex.: FILTER_VALIDADE_EMAIL)
+     * @return bool|mixed Retorna o valor do campo em caso de sucesso ou FALSE em caso de não existir ou não validar
+     */
+    public function getParam( $param, $tipo = FILTER_DEFAULT ) {
+        // Parâmetro não especificado?
+        if( ! $param )
+            return false;
+
+        // Verifica se o parâmetro foi postado
+        $post = filter_input( INPUT_POST, (string) $param, $tipo );
+        if( $post )
+            return $post;
+
+        // Verifica se o parâmetro foi informado na query string
+        $get = filter_input( INPUT_GET, (string) $param, $tipo );
+        if( $get )
+            return $get;
+
+        // Não foi encontrado o parâmetro
+        return  false;
     }
 
     /**
@@ -227,11 +265,11 @@ class Uri
     /**
      * Pega a raiz da URI, com ou sem servidor
      *
-     * @param boolean $comServer = Deve ir com servidor?
-     * @param boolean $comProtoloco = Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
+     * @param boolean $comServer Deve ir com servidor?
+     * @param boolean $comProtoloco Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
      * @return string Raiz
      */
-    public function getRaiz( $comServer = false, $comProtoloco = false )
+    public function getRaiz( $comServer = self::NAO_INCLUI_SERVER, $comProtoloco = self::SERVER_SEM_PROTOCOLO )
     {
         return
             ( $comServer
@@ -245,11 +283,11 @@ class Uri
     /**
      * Pega o servidor da URL
      *
-     * @param boolean $comProtoloco = Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
-     * @param boolean $comUri = Deve ir com o restante da URI?
+     * @param boolean $comProtoloco Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
+     * @param boolean $comUri Deve ir com o restante da URI?
      * @return string
      */
-    public function getServer( $comProtoloco = false, $comUri = false )
+    public function getServer( $comProtoloco = self::SERVER_SEM_PROTOCOLO, $comUri = self::SERVER_SEM_URI )
     {
 
         $protocol = preg_match( '/https/i', filter_input( INPUT_SERVER, 'SERVER_PROTOCOL' ) ) ? 'https://' : 'http://';
