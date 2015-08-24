@@ -21,31 +21,21 @@ class Sessao
         $nomeSessao,                # Guarda o nome da sessão sem o hash
         $sessaoIniciada = false;    # Verfica se a sessão foi iniciada
 
-    /**
-     * Gera a Instância da Sessão
-     * @param string $id Define o ID da sessão
-     * @param integer $tempoHoras Duração da sessão em horas
-     * @return Sessao
-     */
-    private static function getInstance( $id, $tempoHoras )
-    {
-        // Verifica se a classe já foi instanciada
-        if( ! isset( self::$instance ) )
-            self::$instance = new self( $id, $tempoHoras );
-
-        // Retorna a instância da classe            
-        return self::$instance;
-    }
 
     /**
      * Inicia uma sessão - Atalho para getInstance
      * @param string $id Define o ID da sessão
-     * @param integer $tempoHoras Duração da sessão em horas
+     * @param integer $tempoMin Duração da sessão em horas (12h por padrao)
      * @return Sessao
      */
-    public static function iniciar( $id = NULL, $tempoHoras = 12 )
+    public static function iniciar( $id = NULL, $tempoMin = 720 )
     {
-        return self::getInstance( $id, $tempoHoras );
+        // Verifica se a classe já foi instanciada
+        if ( ! isset( self::$instance ) )
+            self::$instance = new self( $id, $tempoMin );
+
+        // Retorna a instância da classe
+        return self::$instance;
     }
 
     /**
@@ -53,34 +43,31 @@ class Sessao
      * Inicia uma sessão
      *
      * @param string $id Id da sessão
-     * @param integer $tempoHoras Duração da sessão em horas
+     * @param integer $tempoMin Duração da sessão em horas
      * @throws Exception Não iniciou a sessão
      */
-    private function __construct( $id, $tempoHoras )
+    private function __construct( $id, $tempoMin )
     {
         // Criando pasta da sessão, se não existir
         $sessionPath = __DIR__ . DIRECTORY_SEPARATOR . 'temp';
-        if( ! file_exists( $sessionPath ) )
+        if ( ! file_exists( $sessionPath ) )
             mkdir( $sessionPath );
 
         // Setando a pasta da sessão, se existir
-        if( file_exists( $sessionPath ) )
-            ini_set('session.save_path', $sessionPath);
+        if ( file_exists( $sessionPath ) )
+            ini_set( 'session.save_path', $sessionPath );
 
-        // Setando duração da sessão
-        ini_set('session.gc_maxlifetime', $tempoHoras * 3600);
+        // Setando duração da sessão em minutos
+        ini_set( 'session.cookie_lifetime', $tempoMin * 60 );
+        ini_set( 'session.gc_maxlifetime', $tempoMin * 60 );
 
         // Define o nome da sessão
-        self::$nomeSessao = 'L0j45'
-            . DIRECTORY_SEPARATOR
+        self::$nomeSessao = 'L0j45' . DIRECTORY_SEPARATOR
             //  IP do usuário
-            . $_SERVER['REMOTE_ADDR']
-            . DIRECTORY_SEPARATOR
-            . 'TMWxD'
-            . DIRECTORY_SEPARATOR
+            . $_SERVER[ 'REMOTE_ADDR' ] . DIRECTORY_SEPARATOR
+            . 'TMWxD' . DIRECTORY_SEPARATOR
             // Dados do navegador do usuário
-            . $_SERVER['HTTP_USER_AGENT']
-            . DIRECTORY_SEPARATOR
+            . $_SERVER[ 'HTTP_USER_AGENT' ] . DIRECTORY_SEPARATOR
             // ID da sessão caso seja definido
             . $id;
 
@@ -91,7 +78,7 @@ class Sessao
         session_start();
 
         // Verifica se sessão não foi iniciada
-        if( ! isset( $_SESSION ) )
+        if ( ! isset( $_SESSION ) )
             throw new Exception( 'Não foi possível iniciar a sessão', 100 );
 
         self::$sessaoIniciada = true;
@@ -100,14 +87,16 @@ class Sessao
     /**
      * Método Set
      * Cria uma nova chave na sessão.
-     *
      * $sessao->attr é o mesmo que $_SESSION['attr']
+     *
+     * @param string $chave Chave a ser inserida na sessão
+     * @param mixed $valor Valor da Chave
      * @return boolean Retorna verdadeiro em caso de sucesso
      */
     public function __set( $chave, $valor )
     {
         // Verifica se a sessão foi iniciada
-        if( ! self::$sessaoIniciada )
+        if ( ! self::$sessaoIniciada )
             return false;
 
         // Seta o parâmetro serializado dentro da sessão
@@ -121,16 +110,17 @@ class Sessao
      * Pega o conteúdo da chave de uma sessão
      * $sessao->attr é o mesmo que $_SESSION['attr']
      *
+     * @param string $chave Chave da sessão a ser pega
      * @return mixed Conteúdo da chave
      */
     public function __get( $chave )
     {
         // Verifica se a sessão foi iniciada
-        if( ! self::$sessaoIniciada )
+        if ( ! self::$sessaoIniciada )
             return NULL;
 
         // Retorna o valor desserializado do parâmetro caso ele exista
-        if( $this->chaveExiste( $chave ) )
+        if ( $this->chaveExiste( $chave ) )
             return @unserialize( $_SESSION[ $chave ] );
 
         return NULL;
@@ -150,7 +140,7 @@ class Sessao
     /**
      * Verifica a existência de uma chave
      *
-     * @param string $chave  Chave da sessão
+     * @param string $chave Chave da sessão
      * @return boolean
      */
     public function chaveExiste( $chave )
@@ -167,11 +157,11 @@ class Sessao
     public function eliminaChave( $chave )
     {
         // Verifica se a sessão foi iniciada
-        if( ! self::$sessaoIniciada )
+        if ( ! self::$sessaoIniciada )
             return false;
 
         // Se a chave não existir, retorna como verdadeiro (Afinal, já está eliminada :)
-        if( ! $this->chaveExiste( $chave ) )
+        if ( ! $this->chaveExiste( $chave ) )
             return true;
 
         // Elimina a chave se ela existir
@@ -187,11 +177,11 @@ class Sessao
     public function eliminaTodasChaves()
     {
         // Verifica se a sessão foi iniciada
-        if( ! self::$sessaoIniciada )
+        if ( ! self::$sessaoIniciada )
             return false;
 
         // Elimina uma a uma das chaves da sesão 
-        foreach( $_SESSION as $chave => $valor )
+        foreach ( $_SESSION as $chave => $valor )
             unset( $_SESSION[ $chave ] );
 
         return true;
@@ -205,7 +195,7 @@ class Sessao
     public function destruir()
     {
         // Verifica se a sessão foi iniciada
-        if( ! self::$sessaoIniciada )
+        if ( ! self::$sessaoIniciada )
             return false;
 
         // Salva os dados da sessão codificados
@@ -232,7 +222,7 @@ class Sessao
     public function restaurar( $dadosSessao )
     {
         // Verifica se a sessão foi iniciada
-        if( ! self::$sessaoIniciada )
+        if ( ! self::$sessaoIniciada )
             return false;
 
         // Elimina quaisquer chaves ainda existentes na sessão
@@ -270,12 +260,12 @@ class Sessao
     public function getDados()
     {
         // Verifica se a sessão foi iniciada
-        if( ! self::$sessaoIniciada )
+        if ( ! self::$sessaoIniciada )
             return array();
 
         // Lê todas as chaves da sessão
         $retorno = array();
-        foreach( $_SESSION as $chave => $valor )
+        foreach ( $_SESSION as $chave => $valor )
             $retorno[ $chave ] = unserialize( $valor );
 
         // Retorna os dados desserializados    

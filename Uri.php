@@ -39,7 +39,7 @@ class Uri
     public function __construct( $raiz = '', $raizLocal = '' )
     {
         // Pega a URI removendo a barra inicial se houver
-        $this->uri = preg_replace( '/^\//', '', urldecode( filter_input( INPUT_SERVER, 'REQUEST_URI' ) ) );
+        $this->uri = preg_replace( '/^\//', '', urldecode( $_SERVER[ 'REQUEST_URI' ] ) );
 
         // Pega o body
         $this->body = json_decode( file_get_contents( 'php://input' ) );
@@ -84,7 +84,7 @@ class Uri
         $post = filter_input_array( INPUT_POST );
         if ( $get && $post )
             $this->parametros = array_merge( $get, $post );
-        elseif( $get )
+        elseif ( $get )
             $this->parametros = $get;
         elseif ( $post )
             $this->parametros = $post;
@@ -96,7 +96,7 @@ class Uri
      */
     public function eLocal()
     {
-        return preg_match( '/localhost|127\.0\.0\.1/i', filter_input( INPUT_SERVER, 'HTTP_HOST' ) );
+        return preg_match( '/localhost|127\.0\.0\.1/i', $_SERVER[ 'HTTP_HOST' ] );
     }
 
     /**
@@ -122,7 +122,7 @@ class Uri
             if ( ! preg_match( '/^\/{0,2}www\./i', $server ) ) {
                 // Tenta redirecionar a URL com WWW
                 if ( ! headers_sent() )
-                    header( 'Location: ' . preg_replace( '/^(https?:\/\/)/', '$1www.', $this->getServer( SELF::SERVER_COM_PROTOCOLO, SELF::SERVER_COM_URI ) ) );
+                    header( 'Location: ' . preg_replace( '/^(https?:\/\/)/', '$1www.', $this->getServer( self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI ) ) );
                 return true;
             }
             // Não foi necessária alteração
@@ -132,7 +132,7 @@ class Uri
             if ( preg_match( '/^\/{0,2}www\./i', $server ) ) {
                 // Tenta redirecionar a URL sem WWW
                 if ( ! headers_sent() )
-                    header( 'Location: ' . preg_replace( '/\/\/www\./i', '//', $this->getServer( SELF::SERVER_COM_PROTOCOLO, SELF::SERVER_COM_URI ) ) );
+                    header( 'Location: ' . preg_replace( '/\/\/www\./i', '//', $this->getServer( self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI ) ) );
                 return true;
             }
             // Não foi necessária alteração
@@ -206,23 +206,24 @@ class Uri
      * @param int $tipo Tipo esperado para o valor daquele campo (Ex.: FILTER_VALIDADE_EMAIL)
      * @return bool|mixed Retorna o valor do campo em caso de sucesso ou FALSE em caso de não existir ou não validar
      */
-    public function getParam( $param, $tipo = FILTER_DEFAULT ) {
+    public function getParam( $param, $tipo = FILTER_DEFAULT )
+    {
         // Parâmetro não especificado?
-        if( ! $param )
+        if ( ! $param )
             return false;
 
         // Verifica se o parâmetro foi postado
         $post = filter_input( INPUT_POST, (string) $param, $tipo );
-        if( $post )
+        if ( $post )
             return $post;
 
         // Verifica se o parâmetro foi informado na query string
         $get = filter_input( INPUT_GET, (string) $param, $tipo );
-        if( $get )
+        if ( $get )
             return $get;
 
         // Não foi encontrado o parâmetro
-        return  false;
+        return false;
     }
 
     /**
@@ -290,8 +291,8 @@ class Uri
     public function getServer( $comProtoloco = self::SERVER_SEM_PROTOCOLO, $comUri = self::SERVER_SEM_URI )
     {
 
-        $protocol = preg_match( '/https/i', filter_input( INPUT_SERVER, 'SERVER_PROTOCOL' ) ) ? 'https://' : 'http://';
-        $server = filter_input( INPUT_SERVER, 'HTTP_HOST' ) . '/';
+        $protocol = preg_match( '/https/i', $_SERVER[ 'SERVER_PROTOCOL' ] ) ? 'https://' : 'http://';
+        $server = $_SERVER[ 'HTTP_HOST' ] . '/';
 
         return
             // Com protocolo?
