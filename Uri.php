@@ -30,7 +30,7 @@ class Uri
     public function __construct( $raiz = '', $raizLocal = '' )
     {
         // Pega a URI removendo a barra inicial se houver
-        $this->uri = preg_replace( '/^\//', '', urldecode( $_SERVER[ 'REQUEST_URI' ] ) );
+        $this->uri = preg_replace( '/^\//', '', urldecode( filter_input( INPUT_SERVER, 'REQUEST_URI' ) ) );
 
         // Pega o body
         $this->body = json_decode( file_get_contents( 'php://input' ) );
@@ -80,9 +80,9 @@ class Uri
             endforeach;
 
         // Pega os parâmetros da postagem se houver
-        if ( is_array( $_POST ) && count( $_POST ) > 0 )
-            foreach ( $_POST as $campo => $valor )
-                $this->parametros[ $campo ] = $valor;
+        $post = filter_input_array( INPUT_POST );
+        if( $post )
+            $this->parametros= array_merge( $this->parametros, $post );
     }
 
     /**
@@ -91,7 +91,7 @@ class Uri
      */
     public function eLocal()
     {
-        return preg_match( '/localhost|127\.0\.0\.1/i', $_SERVER[ 'HTTP_HOST' ] );
+        return preg_match( '/localhost|127\.0\.0\.1/i', filter_input( INPUT_SERVER, 'HTTP_HOST' ) );
     }
 
     /**
@@ -228,7 +228,7 @@ class Uri
      * Pega a raiz da URI, com ou sem servidor
      *
      * @param boolean $comServer = Deve ir com servidor?
-     * @param boolean $comProtoloco = Deve ir com protocolo (http|https) ou apenas a incação de servidor (//)?
+     * @param boolean $comProtoloco = Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
      * @return string Raiz
      */
     public function getRaiz( $comServer = false, $comProtoloco = false )
@@ -245,15 +245,15 @@ class Uri
     /**
      * Pega o servidor da URL
      *
-     * @param boolean $comProtoloco = Deve ir com protocolo (http|https) ou apenas a incação de servidor (//)?
+     * @param boolean $comProtoloco = Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
      * @param boolean $comUri = Deve ir com o restante da URI?
      * @return string
      */
     public function getServer( $comProtoloco = false, $comUri = false )
     {
 
-        $protocol = preg_match( '/https/i', $_SERVER[ 'SERVER_PROTOCOL' ] ) ? 'https://' : 'http://';
-        $server = $_SERVER[ 'HTTP_HOST' ] . '/';
+        $protocol = preg_match( '/https/i', filter_input( INPUT_SERVER, 'SERVER_PROTOCOL' ) ) ? 'https://' : 'http://';
+        $server = filter_input( INPUT_SERVER, 'HTTP_HOST' ) . '/';
 
         return
             // Com protocolo?
