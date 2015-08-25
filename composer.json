@@ -1,8 +1,7 @@
 {
   "name": "szagot/config",
   "description": "Arquivos de Configuração para Sistemas",
-  "minimum-stability": "stable",
-  "license": "proprietary",
+  "version": "1.0.0",
   "authors": [
     {
       "name": "Daniel Bispo",
