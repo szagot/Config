@@ -191,9 +191,10 @@ class Request
             . ';base64,'
             . base64_encode( $fileContent )
             . '" alt="' . $fileName . '" />';
+        }
 
-            // Retornando conteúdo do arquivo genérico
-        } else
+        // Retornando conteúdo do arquivo genérico
+        else
             return $fileContent;
     }
 

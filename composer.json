@@ -1,0 +1,15 @@
+{
+  "name": "szagot/Config",
+  "description": "Arquivos de Configuração para Sistemas",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Daniel Bispo",
+      "email": "szago@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0"
+  }
+}
