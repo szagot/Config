@@ -23,7 +23,7 @@ class Sessao
 
 
     /**
-     * Inicia uma sessão - Atalho para getInstance
+     * Inicia uma sessão
      * @param string $id Define o ID da sessão
      * @param integer $tempoMin Duração da sessão em horas (12h por padrao)
      * @return Sessao
