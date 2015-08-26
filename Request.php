@@ -105,7 +105,7 @@ class Request
     /**
      * Retorna a raiz do projeto
      *
-     * @param string $type Raiz da pasta pública já com o endereço do tipo de arquivo escolhido
+     * @param string $type Tipo do arquivo para uma raiz completa. Usar as constantes da classe.
      * @return string
      */
     public function getRaiz( $type = '' )
