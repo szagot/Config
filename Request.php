@@ -105,11 +105,12 @@ class Request
     /**
      * Retorna a raiz do projeto
      *
+     * @param string $type Raiz da pasta pública já com o endereço do tipo de arquivo escolhido
      * @return string
      */
-    public function getRaiz()
+    public function getRaiz( $type = '' )
     {
-        return $this->raiz;
+        return $this->raiz . ( in_array( $type, $this->linkPermissions ) ? $type : '' );
     }
 
     /**
@@ -191,10 +192,9 @@ class Request
             . ';base64,'
             . base64_encode( $fileContent )
             . '" alt="' . $fileName . '" />';
-        }
 
-        // Retornando conteúdo do arquivo genérico
-        else
+        } else
+            // Retornando conteúdo do arquivo genérico
             return $fileContent;
     }
 
