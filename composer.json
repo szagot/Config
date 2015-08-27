@@ -1,6 +1,6 @@
 {
   "name": "szagot/config",
-  "description": "Arquivos de Configuração para Sistemas",
+  "description": "Calsses  estilo HELPER para Configuração de Sistemas",
   "version": "1.0.0",
   "authors": [
     {
