@@ -6,13 +6,11 @@
  *
  * Nota: Se a pasta {raiz}/public (e suas pastas internas) não existirem, a classe tenta criar.
  *
- * @author Daniel Bispo <daniel@tmw.com.br>
+ * @author    Daniel Bispo <daniel@tmw.com.br>
  * @copyright Copyright (c) 2015, TMW E-commerce Solutions
  */
 
 namespace Config;
-
-use \Exception;
 
 class Request
 {
@@ -37,6 +35,7 @@ class Request
      * O método Singleton aqui se faz necessário para que haja adição de apenas 1 caminho raiz em todo o script.
      *
      * @param string $raiz Define a raiz do projeto
+     *
      * @return Request
      */
     public static function iniciar( $raiz = '/' )
@@ -53,6 +52,7 @@ class Request
      * Método construtor
      *
      * @param string $raiz
+     *
      * @return boolean|Request
      */
     private function __construct( $raiz = '/' )
@@ -71,6 +71,7 @@ class Request
         // A raiz existe?
         if ( ! is_dir( $raizProjeto ) ) {
             self::$instance = null;
+
             return false;
         }
 
@@ -81,6 +82,7 @@ class Request
         if ( ! is_dir( $this->raizBase ) ) {
             if ( ! @mkdir( $this->raizBase, 0775 ) ) {
                 self::$instance = null;
+
                 return false;
             }
         }
@@ -105,7 +107,8 @@ class Request
     /**
      * Retorna a raiz do projeto
      *
-     * @param string $type Tipo do arquivo para uma raiz completa. Usar as constantes da classe.
+     * @param string $type Raiz da pasta pública já com o endereço do tipo d
+     *
      * @return string
      */
     public function getRaiz( $type = '' )
@@ -120,10 +123,12 @@ class Request
      *      O array informado [ 'nome' => 'Teste' ] servirá para localizar e substituir o texto
      *      {{nome}} por Teste.
      *
-     * @param string $fileName Nome do Arquivo
-     * @param string $type Tipo do arquivo. Usar as constantes da classe.
-     * @param array $parametros Parâmetros de substituição.
-     * @param bool $minify Deve miniaturalizar os arquivos de código? (Remove espaços, quebras de linha e comentários)
+     * @param string $fileName   Nome do Arquivo
+     * @param string $type       Tipo do arquivo. Usar as constantes da classe.
+     * @param array  $parametros Parâmetros de substituição.
+     * @param bool   $minify     Deve miniaturalizar os arquivos de código? (Remove espaços, quebras de linha e
+     *                           comentários)
+     *
      * @return mixed Retorna o conteúdo do arquivo pronto para ser printado
      */
     public function getFile( $fileName, $type = self::MIXED, $parametros = [ ], $minify = true )
@@ -206,10 +211,11 @@ class Request
      *      O array informado [ 'nome' => 'Teste' ] servirá para localizar e substituir o texto
      *      {{nome}} por Teste.
      *
-     * @param string $fileName Nome do Arquivo
-     * @param string $type Tipo do arquivo. Usar as constantes da classe.
-     * @param array $parametros Parâmetros de substituição.
-     * @param bool $minify Deve miniaturalizar os arquivos de código? (Remove espaços, quebras de linha e comentários)
+     * @param string $fileName   Nome do Arquivo
+     * @param string $type       Tipo do arquivo. Usar as constantes da classe.
+     * @param array  $parametros Parâmetros de substituição.
+     * @param bool   $minify     Deve miniaturalizar os arquivos de código? (Remove espaços, quebras de linha e
+     *                           comentários)
      */
     public function showFile( $fileName, $type = self::MIXED, $parametros = [ ], $minify = true )
     {
@@ -221,10 +227,11 @@ class Request
      * Se o arquivo não for CSS, JS ou IMG, ele irá adicionar o conteúdo do arquivo em uma <div>
      *
      * @param string $fileName Nome do arquivo
-     * @param string $type Tipo do arquivo. Usar as constantes da classe.
-     * @param string $id ID da tag (não aplicável para JS e CSS)
-     * @param string $class Classe(s) da tag (não aplicável para JS e CSS)
-     * @param string $alt Altertext da imagem (apenas pata IMG)
+     * @param string $type     Tipo do arquivo. Usar as constantes da classe.
+     * @param string $id       ID da tag (não aplicável para JS e CSS)
+     * @param string $class    Classe(s) da tag (não aplicável para JS e CSS)
+     * @param string $alt      Altertext da imagem (apenas pata IMG)
+     *
      * @return string Retorna a requisição
      */
     public function getLinkFile( $fileName, $type = self::MIXED, $id = '', $class = '', $alt = '' )
@@ -264,10 +271,10 @@ class Request
      * Se o arquivo não for CSS, JS ou IMG, ele irá adicionar o conteúdo do arquivo em uma <div>
      *
      * @param string $fileName Nome do arquivo
-     * @param string $type Tipo do arquivo. Usar as constantes da classe.
-     * @param string $id ID da tag (não aplicável para JS e CSS)
-     * @param string $class Classe(s) da tag (não aplicável para JS e CSS)
-     * @param string $alt Altertext da imagem (apenas pata IMG)
+     * @param string $type     Tipo do arquivo. Usar as constantes da classe.
+     * @param string $id       ID da tag (não aplicável para JS e CSS)
+     * @param string $class    Classe(s) da tag (não aplicável para JS e CSS)
+     * @param string $alt      Altertext da imagem (apenas pata IMG)
      */
     public function showLinkFile( $fileName, $type = self::MIXED, $id = '', $class = '', $alt = '' )
     {

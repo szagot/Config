@@ -2,7 +2,7 @@
 /**
  * Classe para Manipulação de URI's
  *
- * @author Daniel Bispo <daniel@tmw.com.br>
+ * @author    Daniel Bispo <daniel@tmw.com.br>
  * @copyright Copyright (c) 2015, TMW E-commerce Solutions
  */
 
@@ -25,15 +25,15 @@ class Uri
 
     private
         $uri,
-        $caminho = array(),
-        $parametros = array(),
-        $body = array(),
+        $caminho = [ ],
+        $parametros = [ ],
+        $body = [ ],
         $raiz;
 
     /**
      * Método Construtor
      *
-     * @param string $raiz Raiz do site
+     * @param string $raiz      Raiz do site
      * @param string $raizLocal Raiz do site quando executado em localhost
      */
     public function __construct( $raiz = '', $raizLocal = '' )
@@ -92,6 +92,7 @@ class Uri
 
     /**
      * Verifica se está executando o script localmente
+     *
      * @return boolean
      */
     public function eLocal()
@@ -104,6 +105,7 @@ class Uri
      * Este método deve ser chamado ANTES de qualquer saída em tela
      *
      * @param bool $add Deve adicionar ou remover o WWW?
+     *
      * @return bool O retorno FALSE indica que não foi necessário nenhuma alteração na URL. Evidentemente, se foi
      *              necessária uma alteração, o servidor irá restartar a requisição adicionando ou removendo o WWW.
      */
@@ -123,8 +125,10 @@ class Uri
                 // Tenta redirecionar a URL com WWW
                 if ( ! headers_sent() )
                     header( 'Location: ' . preg_replace( '/^(https?:\/\/)/', '$1www.', $this->getServer( self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI ) ) );
+
                 return true;
             }
+
             // Não foi necessária alteração
             return false;
         } else {
@@ -133,8 +137,10 @@ class Uri
                 // Tenta redirecionar a URL sem WWW
                 if ( ! headers_sent() )
                     header( 'Location: ' . preg_replace( '/\/\/www\./i', '//', $this->getServer( self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI ) ) );
+
                 return true;
             }
+
             // Não foi necessária alteração
             return false;
         }
@@ -160,6 +166,7 @@ class Uri
      *      $this->getCaminho()->outros[x] = Da quarta parte em diante é agrupado em outros
      *
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
+     *
      * @return array Caminho da URI
      */
     public function getCaminho( $obj = self::RETORNO_OBJ )
@@ -182,6 +189,7 @@ class Uri
      *      $this->getParametros()->param1 = Pega o valor do param1
      *
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
+     *
      * @return array Parâmetros da URI
      */
     public function getParametros( $obj = self::RETORNO_OBJ )
@@ -203,7 +211,8 @@ class Uri
      * Caso não especificado, retorna como string por padrão (FILTER_DEFAULT).
      *
      * @param string $param Nome do campo a ser pego
-     * @param int $tipo Tipo esperado para o valor daquele campo (Ex.: FILTER_VALIDADE_EMAIL)
+     * @param int    $tipo  Tipo esperado para o valor daquele campo (Ex.: FILTER_VALIDADE_EMAIL)
+     *
      * @return bool|mixed Retorna o valor do campo em caso de sucesso ou FALSE em caso de não existir ou não validar
      */
     public function getParam( $param, $tipo = FILTER_DEFAULT )
@@ -237,6 +246,7 @@ class Uri
      *      $this->getUri()->param1 = Pega o valor do param1
      *
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
+     *
      * @return array Caminho da URI completo com os parâmetros se houverem
      */
     public function getUri( $obj = self::RETORNO_OBJ )
@@ -266,8 +276,9 @@ class Uri
     /**
      * Pega a raiz da URI, com ou sem servidor
      *
-     * @param boolean $comServer Deve ir com servidor?
+     * @param boolean $comServer    Deve ir com servidor?
      * @param boolean $comProtoloco Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
+     *
      * @return string Raiz
      */
     public function getRaiz( $comServer = self::NAO_INCLUI_SERVER, $comProtoloco = self::SERVER_SEM_PROTOCOLO )
@@ -285,7 +296,8 @@ class Uri
      * Pega o servidor da URL
      *
      * @param boolean $comProtoloco Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
-     * @param boolean $comUri Deve ir com o restante da URI?
+     * @param boolean $comUri       Deve ir com o restante da URI?
+     *
      * @return string
      */
     public function getServer( $comProtoloco = self::SERVER_SEM_PROTOCOLO, $comUri = self::SERVER_SEM_URI )

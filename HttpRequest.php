@@ -17,7 +17,7 @@
  *      $hr->execute();
  *      var_dump( $hr->getResponse() );
  *
- * @author Daniel Bispo <daniel@tmw.com.br>
+ * @author    Daniel Bispo <daniel@tmw.com.br>
  * @copyright Copyright (c) 2015, TMW E-commerce Solutions
  */
 
@@ -39,14 +39,14 @@ class HttpRequest
     /**
      * Inicializa a classe setando os atributos principais para a conexão Http
      *
-     * @param string $url = URL da Requisição
-     * @param string $method = Método.
-     * @param array $headers
+     * @param string     $url    URL da Requisição
+     * @param string     $method Método.
+     * @param array      $headers
      * @param array|null $params
-     * @param string $bodyContent
-     * @param string $authType
-     * @param string $authUser
-     * @param string $authPass
+     * @param string     $bodyContent
+     * @param string     $authType
+     * @param string     $authUser
+     * @param string     $authPass
      */
     public function __construct( $url = null, $method = null, array $headers = null, array $params = null, $bodyContent = null, $authType = null, $authUser = null, $authPass = null )
     {
@@ -104,6 +104,8 @@ class HttpRequest
     }
 
     /**
+     * Pega o erro da requisição
+     *
      * @return string
      */
     public function getError()
@@ -112,7 +114,8 @@ class HttpRequest
     }
 
     /**
-     * @param string $url = URL/URI da requisição
+     * @param string $url URL/URI da requisição
+     *
      * @return boolean
      */
     public function setUrl( $url )
@@ -120,10 +123,12 @@ class HttpRequest
         $this->url = filter_var( trim( (string) $url ), FILTER_VALIDATE_URL );
         if ( empty( $this->url ) ) {
             $this->error = 'Informe uma URL válida';
+
             return false;
         }
 
         $this->error = null;
+
         return true;
     }
 
@@ -135,7 +140,7 @@ class HttpRequest
      *      PATCH  - Atualização parcial de campos
      *      DELETE - Deleção
      *
-     * @param string $method = Método da requisição
+     * @param string $method Método da requisição
      */
     public function setMethod( $method = 'GET' )
     {
@@ -143,7 +148,7 @@ class HttpRequest
     }
 
     /**
-     * @param array $headers = Headers da requisição
+     * @param array $headers Headers da requisição
      */
     public function setHeaders( array $headers = null )
     {
@@ -151,7 +156,7 @@ class HttpRequest
     }
 
     /**
-     * @param string $bodyContent = Conteúdo a ser enviado.Normalmente uma string em JSON ou XML.
+     * @param string $bodyContent Conteúdo a ser enviado.Normalmente uma string em JSON ou XML.
      */
     public function setBodyContent( $bodyContent = null )
     {
@@ -160,6 +165,7 @@ class HttpRequest
 
     /**
      * Seta o Usuário de uma autenticação do tipo BASIC
+     *
      * @param string $basicUser
      */
     public function setBasicUser( $basicUser = null )
@@ -169,6 +175,7 @@ class HttpRequest
 
     /**
      * Seta a Senha de uma autenticação do tipo BASIC
+     *
      * @param string $basicPass
      */
     public function setBasicPass( $basicPass = null )
@@ -226,6 +233,7 @@ class HttpRequest
 
     /**
      * Pega a resposta da requisição em caso de sucesso.
+     *
      * @return array No seguinte formado:
      *               [
      *                  'error' => 'Com possíveis erros da requisição ou null em caso negativo',
@@ -238,7 +246,7 @@ class HttpRequest
     public function getResponse()
     {
         return [
-            'error' => $this->error,
+            'error'    => $this->error,
             'response' => $this->response
         ];
     }

@@ -7,7 +7,7 @@
  * Exemplo de GET: echo $sessao->attr;
  * Encerra seção: $sessao = NULL;
  *
- * @author Daniel Bispo <daniel@tmw.com.br>
+ * @author    Daniel Bispo <daniel@tmw.com.br>
  * @copyright Copyright (c) 2015, TMW E-commerce Solutions
  */
 namespace Config;
@@ -24,11 +24,13 @@ class Sessao
 
     /**
      * Inicia uma sessão
-     * @param string $id Define o ID da sessão
+     *
+     * @param string  $id       Define o ID da sessão
      * @param integer $tempoMin Duração da sessão em horas (12h por padrao)
+     *
      * @return Sessao
      */
-    public static function iniciar( $id = NULL, $tempoMin = 720 )
+    public static function iniciar( $id = null, $tempoMin = 720 )
     {
         // Verifica se a classe já foi instanciada
         if ( ! isset( self::$instance ) )
@@ -42,8 +44,9 @@ class Sessao
      * Método Construtor
      * Inicia uma sessão
      *
-     * @param string $id Id da sessão
+     * @param string  $id       Id da sessão
      * @param integer $tempoMin Duração da sessão em horas
+     *
      * @throws Exception Não iniciou a sessão
      */
     private function __construct( $id, $tempoMin )
@@ -90,7 +93,8 @@ class Sessao
      * $sessao->attr é o mesmo que $_SESSION['attr']
      *
      * @param string $chave Chave a ser inserida na sessão
-     * @param mixed $valor Valor da Chave
+     * @param mixed  $valor Valor da Chave
+     *
      * @return boolean Retorna verdadeiro em caso de sucesso
      */
     public function __set( $chave, $valor )
@@ -111,19 +115,20 @@ class Sessao
      * $sessao->attr é o mesmo que $_SESSION['attr']
      *
      * @param string $chave Chave da sessão a ser pega
+     *
      * @return mixed Conteúdo da chave
      */
     public function __get( $chave )
     {
         // Verifica se a sessão foi iniciada
         if ( ! self::$sessaoIniciada )
-            return NULL;
+            return null;
 
         // Retorna o valor desserializado do parâmetro caso ele exista
         if ( $this->chaveExiste( $chave ) )
             return @unserialize( $_SESSION[ $chave ] );
 
-        return NULL;
+        return null;
     }
 
     /**
@@ -134,13 +139,14 @@ class Sessao
     {
         session_write_close();
         self::$sessaoIniciada = false;
-        self::$instance = NULL;
+        self::$instance = null;
     }
 
     /**
      * Verifica a existência de uma chave
      *
      * @param string $chave Chave da sessão
+     *
      * @return boolean
      */
     public function chaveExiste( $chave )
@@ -152,6 +158,7 @@ class Sessao
      * Elimina uma chave da sessão
      *
      * @param string $chave Chave da sessão a ser eliminada
+     *
      * @return boolean Verdadeiro em caso de sucesso
      */
     public function eliminaChave( $chave )
@@ -166,6 +173,7 @@ class Sessao
 
         // Elimina a chave se ela existir
         unset( $_SESSION[ $chave ] );
+
         return true;
     }
 
@@ -207,7 +215,7 @@ class Sessao
 
         // Desinstancia a classe
         self::$instance =
-        self::$nomeSessao = NULL;
+        self::$nomeSessao = null;
 
         // Retorna os dados da sessão
         return $dadosSessao;
@@ -217,6 +225,7 @@ class Sessao
      * Restaura a sessão
      *
      * @param string $dadosSessao Dados da sessão codificados
+     *
      * @return boolean Verdadeiro em caso de sucesso
      */
     public function restaurar( $dadosSessao )
@@ -261,10 +270,10 @@ class Sessao
     {
         // Verifica se a sessão foi iniciada
         if ( ! self::$sessaoIniciada )
-            return array();
+            return [ ];
 
         // Lê todas as chaves da sessão
-        $retorno = array();
+        $retorno = [ ];
         foreach ( $_SESSION as $chave => $valor )
             $retorno[ $chave ] = unserialize( $valor );
 
