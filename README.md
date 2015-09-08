@@ -52,18 +52,19 @@ Não esqueça de adicionar o comando abaixo no início do script, para não ter 
     // Exemplo http://meusite.com/base_do_projeto/pagina_de_teste
     $uri = new Uri('base_do_projeto');
     
-    // Verificando se a uri contém WWW. Se não tiver, reinica a página
+    // Verificando se a uri contém WWW. Se não tiver, reinica a página adicionando o WWW
     // Naturalmente, nenhum header deve ter sido enviado antes disso
+    // Para remover o WWW, use $uri->removeWWW();
     if( $uri->addWWW() )
         exit;
-    
+        
     // Pegando e filtrando um POST/GET
     $email = $uri->getParam('email', FILTER_EMAIL);
     
-    // Pegando POST/GET sem qualquer filtro, jeito 2
+    // Pegando POST/GET sem qualquer filtro, jeito 1
     $nome = $uri->getParam('nome');
     
-    // Pegando POST/GET sem qualquer filtro, jeito 1
+    // Pegando POST/GET sem qualquer filtro, jeito 2
     $nome = $uri->getParametros()->nome;
     
     // Pegando os detalhes da URI: http://meusite.com/base_do_projeto/pagina_de_teste/opcao/detalhe/outros-0/outros-1/
