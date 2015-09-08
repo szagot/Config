@@ -107,7 +107,7 @@ class Request
     /**
      * Retorna a raiz do projeto
      *
-     * @param string $type Raiz da pasta pública já com o endereço do tipo d
+     * @param string $type Raiz da pasta pública já com o endereço do tipo determinado
      *
      * @return string
      */
