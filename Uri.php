@@ -154,7 +154,7 @@ class Uri
      */
     public function removeWWW()
     {
-        $this->addWWW( false );
+        return $this->addWWW( false );
     }
 
     /**
