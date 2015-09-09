@@ -25,7 +25,7 @@ class Uri
 
     private
         $uri,
-        $caminho = [ ],
+        $caminho = [ 'pagina' => null, 'opcao' => null, 'detalhe' => null, 'outros' => [ ] ],
         $parametros = [ ],
         $body = [ ],
         $raiz;
