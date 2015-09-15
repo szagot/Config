@@ -273,6 +273,10 @@ class Uri
         return $this->body;
     }
 
+    public function getMethod(){
+        return $_SERVER['REQUEST_METHOD'];
+    }
+
     /**
      * Pega a raiz da URI, com ou sem servidor
      *
