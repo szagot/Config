@@ -41,8 +41,8 @@ class Uri
         // Pega a URI removendo a barra inicial se houver
         $this->uri = preg_replace( '/^\//', '', urldecode( $_SERVER[ 'REQUEST_URI' ] ) );
 
-        // Pega o body
-        $this->body = json_decode( file_get_contents( 'php://input' ) );
+        // Tenta pegar o body (apenas formato JSON)
+        $this->body = @json_decode( @file_get_contents( 'php://input' ) );
 
         // Separa os parâmetros (Query String) da URI, pegando tudo o que não for GET
         list( $caminho ) = explode( '?', $this->uri );
