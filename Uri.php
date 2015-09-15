@@ -14,6 +14,7 @@ class Uri
         // Tipos de Retorno
         RETORNO_OBJ = true,
         RETORNO_ARRAY = false,
+
         // Parâmetros de Servidor
         INCLUI_SERVER = true,
         NAO_INCLUI_SERVER = false,
@@ -41,8 +42,8 @@ class Uri
         // Pega a URI removendo a barra inicial se houver
         $this->uri = preg_replace( '/^\//', '', urldecode( $_SERVER[ 'REQUEST_URI' ] ) );
 
-        // Tenta pegar o body (apenas formato JSON)
-        $this->body = @json_decode( @file_get_contents( 'php://input' ) );
+        // Tenta pegar o body
+        $this->body = @file_get_contents( 'php://input' );
 
         // Separa os parâmetros (Query String) da URI, pegando tudo o que não for GET
         list( $caminho ) = explode( '?', $this->uri );
@@ -266,15 +267,18 @@ class Uri
     /**
      * Retorna o conteúdo do Body em caso de requisição POST via http request
      *
-     * @return array Parâmetros da URI
+     * @param bool $json Converte o conteúdo de JSON para array
+     *
+     * @return array|string Retorna o Body. Por padrão retorna um array, desde que o conteúdo do body seja JSON
      */
-    public function getBody()
+    public function getBody( $json = true )
     {
-        return $this->body;
+        return $json ? @json_decode( $this->body ) : $this->body;
     }
 
-    public function getMethod(){
-        return $_SERVER['REQUEST_METHOD'];
+    public function getMethod()
+    {
+        return $_SERVER[ 'REQUEST_METHOD' ];
     }
 
     /**
