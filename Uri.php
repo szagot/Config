@@ -276,6 +276,11 @@ class Uri
         return $json ? @json_decode( $this->body ) : $this->body;
     }
 
+    /**
+     * Retorna o método da requisição, quando aplicável
+     *
+     * @return string
+     */
     public function getMethod()
     {
         return $_SERVER[ 'REQUEST_METHOD' ];
