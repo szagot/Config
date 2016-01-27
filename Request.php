@@ -258,7 +258,7 @@ class Request
 
         // É JS?
         elseif ( $type == self::JS )
-            return "<script src='{$path}' type='text/javascript'></script>";
+            return "<script id='{$id}' src='{$path}' type='text/javascript'></script>";
 
         else
             return '';
