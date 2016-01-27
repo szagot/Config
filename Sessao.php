@@ -18,15 +18,17 @@ class Sessao
 {
     private static
         $instance,                  # Guarda a instância da classe
-        $nomeSessao,                # Guarda o nome da sessão sem o hash
-        $sessaoIniciada = false;    # Verfica se a sessão foi iniciada
+        $nomeSessao;                # Guarda o nome da sessão sem o hash
+
+    private
+        $sessaoIniciada = false;    # Verifica se a sessão foi iniciada
 
 
     /**
      * Inicia uma sessão
      *
      * @param string  $id       Define o ID da sessão
-     * @param integer $tempoMin Duração da sessão em horas (12h por padrao)
+     * @param integer $tempoMin Duração da sessão em minutos (12h por padrao)
      *
      * @return Sessao
      */
@@ -45,7 +47,7 @@ class Sessao
      * Inicia uma sessão
      *
      * @param string  $id       Id da sessão
-     * @param integer $tempoMin Duração da sessão em horas
+     * @param integer $tempoMin Duração da sessão em min
      *
      * @throws Exception Não iniciou a sessão
      */
@@ -60,9 +62,9 @@ class Sessao
         if ( file_exists( $sessionPath ) )
             ini_set( 'session.save_path', $sessionPath );
 
-        // Setando duração da sessão em minutos
-        ini_set( 'session.cookie_lifetime', $tempoMin * 60 );
-        ini_set( 'session.gc_maxlifetime', $tempoMin * 60 );
+        // Setando duração da sessão em segundos
+        ini_set( 'session.cookie_lifetime', 999999 );
+        ini_set( 'session.gc_maxlifetime', 999999 );
 
         // Define o nome da sessão
         self::$nomeSessao = 'L0j45' . DIRECTORY_SEPARATOR
@@ -84,7 +86,9 @@ class Sessao
         if ( ! isset( $_SESSION ) )
             throw new Exception( 'Não foi possível iniciar a sessão', 100 );
 
-        self::$sessaoIniciada = true;
+        $this->setTempoMin( $tempoMin );
+        $this->setInicioSessao();
+        $this->sessaoIniciada = true;
     }
 
     /**
@@ -100,7 +104,7 @@ class Sessao
     public function __set( $chave, $valor )
     {
         // Verifica se a sessão foi iniciada
-        if ( ! self::$sessaoIniciada )
+        if ( ! $this->sessaoIniciada )
             return false;
 
         // Seta o parâmetro serializado dentro da sessão
@@ -121,7 +125,7 @@ class Sessao
     public function __get( $chave )
     {
         // Verifica se a sessão foi iniciada
-        if ( ! self::$sessaoIniciada )
+        if ( ! $this->sessaoIniciada )
             return null;
 
         // Retorna o valor desserializado do parâmetro caso ele exista
@@ -138,8 +142,88 @@ class Sessao
     public function __destruct()
     {
         session_write_close();
-        self::$sessaoIniciada = false;
+        $this->sessaoIniciada = false;
         self::$instance = null;
+    }
+
+    /**
+     * Seta a quantidade de tempo de duração da sessão em minutos
+     *
+     * @param int $tempoMin Tempo em minutos
+     */
+    public function setTempoMin( $tempoMin = 0 )
+    {
+        // Verifica se a sessão foi iniciada
+        if ( (int) $tempoMin <= 0 )
+            $tempoMin = 999999;
+
+        $_SESSION[ 'tempoMin' ] = (int) $tempoMin;
+    }
+
+    /**
+     * Inicia/Reinicia a contagem de tempo.
+     *
+     * @param bool $reiniciar É para forçar reinicio da contagem?
+     */
+    public function setInicioSessao( $reiniciar = false )
+    {
+        // Inicio da sessao já definido ou ordem para reiniciar?
+        if ( ! isset( $_SESSION[ 'inicioSessao' ] ) || $reiniciar ) {
+            // Tempo limite definido?
+            if ( ! isset( $_SESSION[ 'tempoMin' ] ) )
+                $this->setTempoMin();
+
+            // Inicializa timing
+            $_SESSION[ 'inicioSessao' ] = time();
+            $_SESSION[ 'fimSessao' ] = strtotime( "+{$_SESSION['tempoMin']} minutes" );
+        }
+    }
+
+    /**
+     * Retorna a data/hora do início da sessão
+     *
+     * @return string aaaa-mm-dd h24:m:s
+     */
+    public function getInicioSessao()
+    {
+        // Verifica se a sessão foi iniciada
+        if ( ! $this->verificaSessao() )
+            return '';
+
+        return date( 'Y-m-d H:i:s', $_SESSION[ 'inicioSessao' ] );
+    }
+
+    /**
+     * Retorna a data/hora do fim da sessão
+     *
+     * @return string aaaa-mm-dd h24:m:s
+     */
+    public function getFimSessao()
+    {
+        // Verifica se a sessão foi iniciada
+        if ( ! $this->verificaSessao() )
+            return '';
+
+        return date( 'Y-m-d H:i:s', $_SESSION[ 'fimSessao' ] );
+    }
+
+    /**
+     * Verifica se a sessão ainda é válida
+     *
+     * @return bool
+     */
+    private function verificaSessao()
+    {
+        if ( ! $this->sessaoIniciada )
+            return false;
+
+        if ( ! isset( $_SESSION[ 'fimSessao' ] ) || time() >= $_SESSION[ 'fimSessao' ] ) {
+            $this->destruir();
+
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -151,6 +235,10 @@ class Sessao
      */
     public function chaveExiste( $chave )
     {
+        // Verifica se a sessão foi iniciada
+        if ( ! $this->verificaSessao() )
+            return false;
+
         return isset( $_SESSION[ $chave ] );
     }
 
@@ -164,7 +252,7 @@ class Sessao
     public function eliminaChave( $chave )
     {
         // Verifica se a sessão foi iniciada
-        if ( ! self::$sessaoIniciada )
+        if ( ! $this->verificaSessao() )
             return false;
 
         // Se a chave não existir, retorna como verdadeiro (Afinal, já está eliminada :)
@@ -185,10 +273,10 @@ class Sessao
     public function eliminaTodasChaves()
     {
         // Verifica se a sessão foi iniciada
-        if ( ! self::$sessaoIniciada )
+        if ( ! $this->sessaoIniciada )
             return false;
 
-        // Elimina uma a uma das chaves da sesão 
+        // Elimina uma a uma das chaves da sesão
         foreach ( $_SESSION as $chave => $valor )
             unset( $_SESSION[ $chave ] );
 
@@ -198,20 +286,22 @@ class Sessao
     /**
      * Destrói a sessão
      *
-     * @return string Dados codificados da sessão
+     * @param bool $salvarSessao A sessão deve ser salva?
+     *
+     * @return string|bool Dados codificados da sessão
      */
-    public function destruir()
+    public function destruir( $salvarSessao = false )
     {
         // Verifica se a sessão foi iniciada
-        if ( ! self::$sessaoIniciada )
+        if ( ! isset( $_SESSION ) )
             return false;
 
         // Salva os dados da sessão codificados
-        $dadosSessao = session_encode();
+        $dadosSessao = ( $salvarSessao ) ? @session_encode() : true;
 
         // Destrói a sessão após eliminar as chaves
         $this->eliminaTodasChaves();
-        session_destroy();
+        @session_destroy();
 
         // Desinstancia a classe
         self::$instance =
@@ -231,7 +321,7 @@ class Sessao
     public function restaurar( $dadosSessao )
     {
         // Verifica se a sessão foi iniciada
-        if ( ! self::$sessaoIniciada )
+        if ( ! $this->verificaSessao() )
             return false;
 
         // Elimina quaisquer chaves ainda existentes na sessão
@@ -269,7 +359,7 @@ class Sessao
     public function getDados()
     {
         // Verifica se a sessão foi iniciada
-        if ( ! self::$sessaoIniciada )
+        if ( ! $this->verificaSessao() )
             return [ ];
 
         // Lê todas as chaves da sessão
@@ -277,7 +367,7 @@ class Sessao
         foreach ( $_SESSION as $chave => $valor )
             $retorno[ $chave ] = unserialize( $valor );
 
-        // Retorna os dados desserializados    
+        // Retorna os dados desserializados
         return $retorno;
     }
 }
