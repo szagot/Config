@@ -63,8 +63,8 @@ class Sessao
             ini_set( 'session.save_path', $sessionPath );
 
         // Setando duração da sessão em segundos
-        ini_set( 'session.cookie_lifetime', 999999 );
-        ini_set( 'session.gc_maxlifetime', 999999 );
+        ini_set( 'session.cookie_lifetime', $tempoMin * 60 );
+        ini_set( 'session.gc_maxlifetime', $tempoMin * 60 );
 
         // Define o nome da sessão
         self::$nomeSessao = 'L0j45' . DIRECTORY_SEPARATOR
