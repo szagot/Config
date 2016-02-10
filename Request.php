@@ -223,6 +223,53 @@ class Request
     }
 
     /**
+     * Retorna o conteúdo de um arquivo, repetindo seu conteúdo pela quantidade de linhas no parâmetro.
+     * Se for um arquivo html, css ou js irá fazer, por padrão, a miniaturalização do mesmos antes de adicionar.
+     * Se houverem parâmetros, tentará substituir no código. Exemplo:
+     *      O array múltiplo informado [ [ 'nome' => 'Teste' ] ] servirá para localizar e substituir o texto
+     *      {{nome}} por Teste em cada repetição.
+     *
+     * @param string $fileName   Nome do Arquivo
+     * @param string $type       Tipo do arquivo. Usar as constantes da classe.
+     * @param array  $parametros Array múltiplo. Cada linha deve possuir outro array com os parâmetros de substituição.
+     * @param bool   $minify     Deve miniaturalizar os arquivos de código? (Remove espaços, quebras de linha e
+     *                           comentários)
+     *
+     * @return string Retorna o conteúdo do arquivo pronto para ser printado
+     */
+    public function getMultipleFile( $fileName, $type = self::MIXED, $parametros = [ ], $minify = true )
+    {
+        $dadosRetorno = '';
+        if ( count( $parametros ) > 0 )
+            foreach ( $parametros as $parametro )
+                // Verifica se o conteúdo é um array
+                if ( is_array( $parametro ) )
+                    $dadosRetorno .= $this->getFile( $fileName, $type, $parametro, $minify );
+
+        return $dadosRetorno;
+    }
+
+    /**
+     * Adiciona o conteúdo de um arquivo no ponto de chamada, repetindo seu conteúdo pela quantidade de linhas no
+     * parâmetro. Atalho para echo $this->getMultipleFile() (A impressão em tela é imediata). Se for um arquivo html, css ou js
+     * irá fazer, por padrão, a miniaturalização do mesmos antes de adicionar. Se houverem parâmetros, tentará
+     * substituir no código. Exemplo:
+     *      O array múltiplo informado [ [ 'nome' => 'Teste' ] ] servirá para localizar e substituir o texto
+     *      {{nome}} por Teste em cada repetição.
+     *
+     * @param string $fileName   Nome do Arquivo
+     * @param string $type       Tipo do arquivo. Usar as constantes da classe.
+     * @param array  $parametros Array múltiplo. Cada linha deve possuir outro array com os parâmetros de substituição.
+     * @param bool   $minify     Deve miniaturalizar os arquivos de código? (Remove espaços, quebras de linha e
+     *                           comentários)
+     */
+    public function showMultipleFile( $fileName, $type = self::MIXED, $parametros = [ ], $minify = true )
+    {
+        echo $this->getMultipleFile( $fileName, $type, $parametros, $minify );
+    }
+
+
+    /**
      * Retorna o link de requição do arquivo.
      * Se o arquivo não for CSS, JS ou IMG, ele irá adicionar o conteúdo do arquivo em uma <div>
      *
