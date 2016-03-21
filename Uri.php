@@ -2,8 +2,8 @@
 /**
  * Classe para Manipulação de URI's
  *
- * @author    Daniel Bispo <daniel@tmw.com.br>
- * @copyright Copyright (c) 2015, TMW E-commerce Solutions
+ * @author    Daniel Bispo <szagot@gmail.com>
+ * @copyright Copyright (c) 2015
  */
 
 namespace Config;
