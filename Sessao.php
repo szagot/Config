@@ -2,10 +2,10 @@
 /**
  * Classe administradora de Sessões
  *
- * Inicia uma seção: $sessao = Sessao::iniciar();
- * Exemplo de SET: $sessao->attr = 'Exemplo';
- * Exemplo de GET: echo $sessao->attr;
- * Encerra seção: $sessao = NULL;
+ *      Inicia uma seção: $sessao = Sessao::iniciar();
+ *      Exemplo de SET: $sessao->attr = 'Exemplo';
+ *      Exemplo de GET: echo $sessao->attr;
+ *      Encerra seção: $sessao = NULL;
  *
  * @author    Daniel Bispo <szagot@gmail.com>
  * @copyright Copyright (c) 2015
@@ -67,7 +67,7 @@ class Sessao
         ini_set( 'session.gc_maxlifetime', $tempoMin * 60 );
 
         // Define o nome da sessão
-        self::$nomeSessao = 'L0j45' . DIRECTORY_SEPARATOR
+        self::$nomeSessao = 'Sz4g0t' . DIRECTORY_SEPARATOR
             //  IP do usuário
             . $_SERVER[ 'REMOTE_ADDR' ] . DIRECTORY_SEPARATOR
             . 'TMWxD' . DIRECTORY_SEPARATOR
@@ -153,7 +153,7 @@ class Sessao
      */
     public function setTempoMin( $tempoMin = 0 )
     {
-        // Verifica se a sessão foi iniciada
+        // Se o tempo não foi definido, coloca algo bem longo
         if ( (int) $tempoMin <= 0 )
             $tempoMin = 999999;
 
