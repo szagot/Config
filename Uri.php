@@ -26,10 +26,15 @@ class Uri
 
     private
         $uri,
-        $caminho = [ 'pagina' => null, 'opcao' => null, 'detalhe' => null, 'outros' => [ ] ],
         $parametros = [ ],
         $body = [ ],
         $raiz;
+
+    public
+        $pagina,
+        $opcao,
+        $detalhe,
+        $outros = [ ];
 
     /**
      * Método Construtor
@@ -68,16 +73,16 @@ class Uri
             foreach ( $caminhoDividido as $index => $caminho )
                 switch ( $index ):
                     case 0:
-                        $this->caminho[ 'pagina' ] = $caminho;
+                        $this->pagina = $caminho;
                         break;
                     case 1:
-                        $this->caminho[ 'opcao' ] = $caminho;
+                        $this->opcao = $caminho;
                         break;
                     case 2:
-                        $this->caminho[ 'detalhe' ] = $caminho;
+                        $this->detalhe = $caminho;
                         break;
                     default:
-                        $this->caminho[ 'outros' ][] = $caminho;
+                        $this->outros[] = $caminho;
                 endswitch;
 
         // Pega os parâmetros get e post se houverem
@@ -159,6 +164,8 @@ class Uri
     }
 
     /**
+     * [DEPRECATED] - Pode-se agora chamar diretamente as propriedades do caminho
+     *
      * Retorna o caminho da URI em um array ou objeto, conforme segue:
      *  URI: http://minhapagina.com/pagina/opcao/detalhe/outros-0/outros-1/?param1=valor
      *      $this->getCaminho()->pagina = Página atual, primeira parte da URI
@@ -173,12 +180,12 @@ class Uri
     public function getCaminho( $obj = self::RETORNO_OBJ )
     {
         // Retorno em forma de objeto ou array?
-        if ( $obj ) {
-            $caminho = new \stdClass;
-            foreach ( $this->caminho as $campo => $valor )
-                $caminho->$campo = $valor;
+        if ( $obj == self::RETORNO_ARRAY ) {
+            $caminho = [ ];
+            foreach ( $this as $campo => $valor )
+                $caminho[ $campo ] = $valor;
         } else
-            $caminho = $this->caminho;
+            $caminho = $this;
 
         return $caminho;
     }
@@ -234,34 +241,6 @@ class Uri
 
         // Não foi encontrado o parâmetro
         return false;
-    }
-
-    /**
-     * Retorna o caminho e mais os parâmetros (Query String + POST) da URI
-     * É a soma de $this->getCaminho() e $this->getParametros()
-     *  URI: http://minhapagina.com/pagina/opcao/detalhe/outros-0/outros-1/?param1=valor
-     *      $this->getUri()->pagina = Página atual, primeira parte da URI
-     *      $this->getUri()->opcao = Opções da página, segunda parte da uri
-     *      $this->getUri()->detalhe = Detalhe da opção, terceira parte da uri
-     *      $this->getUri()->outros[x] = Da quarta parte em diante é agrupado em outros
-     *      $this->getUri()->param1 = Pega o valor do param1
-     *
-     * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
-     *
-     * @return array Caminho da URI completo com os parâmetros se houverem
-     */
-    public function getUri( $obj = self::RETORNO_OBJ )
-    {
-        // Retorno em forma de objeto ou array?
-        $params = array_merge( $this->caminho, $this->parametros );
-        if ( $obj ) {
-            $parametros = new \stdClass;
-            foreach ( $params as $campo => $valor )
-                $parametros->$campo = $valor;
-        } else
-            $parametros = $params;
-
-        return $parametros;
     }
 
     /**

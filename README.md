@@ -68,11 +68,11 @@ Não esqueça de adicionar o comando abaixo no início do script, para não ter 
     $nome = $uri->getParametros()->nome;
     
     // Pegando os detalhes da URI: http://meusite.com/base_do_projeto/pagina_de_teste/opcao/detalhe/outros-0/outros-1/
-    echo $uri->getCaminho()->pagina;        # Imprime 'pagina_de_teste'
-    echo $uri->getCaminho()->opcao;         # Imprime 'opcao'
-    echo $uri->getCaminho()->detalhe;       # Imprime 'detalhe'
-    echo $uri->getCaminho()->outros[0];     # Imprime 'outros-0'
-    echo $uri->getCaminho()->outros[1];     # Imprime 'outros-1'
+    echo $uri->pagina;        # Imprime 'pagina_de_teste'
+    echo $uri->opcao;         # Imprime 'opcao'
+    echo $uri->detalhe;       # Imprime 'detalhe'
+    echo $uri->outros[0];     # Imprime 'outros-0'
+    echo $uri->outros[1];     # Imprime 'outros-1'
     
     // Pegando a raiz do projeto: http://meusite.com/base_do_projeto/pagina_de_teste/
     echo $uri->getRaiz();                                                   # Imprime '/base_do_projeto/'
