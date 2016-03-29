@@ -239,6 +239,11 @@ class Uri
         if ( $get )
             return $get;
 
+        // Se não encontrou pode ser um array
+        $post = filter_input( INPUT_POST, (string) $param, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+        if ( $post )
+            return $post;
+
         // Não foi encontrado o parâmetro
         return false;
     }
