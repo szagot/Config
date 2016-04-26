@@ -155,7 +155,7 @@ class Request
 
             // Removendo comentários JS de linha
             if ( $type == self::JS )
-                $fileContent = preg_replace( '/(?:(?<!\:|\\\)\/\/[^"\'].*)/', '', $fileContent );
+                $fileContent = preg_replace( '/[\n\r][\s\t]*\/\/.*[\n\r]/Uis', '', $fileContent );
 
             // Removendo espaços extras
             $fileContent = preg_replace( '/[\s\t]+/', ' ', $fileContent );
