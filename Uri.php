@@ -230,17 +230,17 @@ class Uri
             return false;
 
         // Verifica se o parâmetro foi postado
-        $post = filter_input( INPUT_POST, (string) $param, $tipo );
+        $post = filter_input( INPUT_POST, (string)$param, $tipo );
         if ( $post )
             return $post;
 
         // Verifica se o parâmetro foi informado na query string
-        $get = filter_input( INPUT_GET, (string) $param, $tipo );
+        $get = filter_input( INPUT_GET, (string)$param, $tipo );
         if ( $get )
             return $get;
 
         // Se não encontrou pode ser um array
-        $post = filter_input( INPUT_POST, (string) $param, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
+        $post = filter_input( INPUT_POST, (string)$param, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
         if ( $post )
             return $post;
 
@@ -287,6 +287,16 @@ class Uri
                 // Apenas raiz
                 : preg_replace( '/\/+/', '/', ( '/' . $this->raiz ) )
             );
+    }
+
+    /**
+     * Pega a Uri completa da requisição
+     *
+     * @return mixed
+     */
+    public function getUri()
+    {
+        return $this->uri;
     }
 
     /**
