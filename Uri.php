@@ -118,8 +118,8 @@ class Uri
     public function addWWW( $add = true )
     {
 
-        // Se for local, não faz nada
-        if ( $this->eLocal() )
+        // Se for local ou IP, não faz nada
+        if ( $this->eLocal() || preg_match( '/^([0-9]+\.)+[0-9]+(:[0-9]+)?$/', $_SERVER[ 'HTTP_HOST' ] ) )
             return false;
 
         $server = $this->getServer();
