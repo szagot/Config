@@ -39,23 +39,29 @@ class HttpRequest
     /**
      * Inicializa a classe setando os atributos principais para a conexão Http
      *
-     * @param string     $url    URL da Requisição
-     * @param string     $method Método.
-     * @param array      $headers
-     * @param array|null $params
-     * @param string     $bodyContent
-     * @param string     $authType
-     * @param string     $authUser
-     * @param string     $authPass
+     * @param string $url    URL da Requisição
+     * @param string $method Método.
+     * @param array  $headers
+     * @param string $bodyContent
+     * @param string $authType
+     * @param string $authUser
+     * @param string $authPass
      */
-    public function __construct( $url = null, $method = null, array $headers = null, array $params = null, $bodyContent = null, $authType = null, $authUser = null, $authPass = null )
-    {
-        $this->setUrl( $url );
-        $this->setMethod( $method );
-        $this->setHeaders( $headers );
-        $this->setBodyContent( $bodyContent );
-        $this->setBasicUser( $authUser );
-        $this->setBasicPass( $authPass );
+    public function __construct(
+        $url = null,
+        $method = null,
+        array $headers = null,
+        $bodyContent = null,
+        $authType = null,
+        $authUser = null,
+        $authPass = null
+    ) {
+        $this->setUrl($url);
+        $this->setMethod($method);
+        $this->setHeaders($headers);
+        $this->setBodyContent($bodyContent);
+        $this->setBasicUser($authUser);
+        $this->setBasicPass($authPass);
     }
 
     /**
@@ -66,41 +72,45 @@ class HttpRequest
     {
         // Incia a requisição setando parâmetros básicos
         $conection = curl_init();
-        curl_setopt( $conection, CURLOPT_URL, $this->url );      #URL
-        curl_setopt( $conection, CURLOPT_TIMEOUT, 30 );          #Timeout de 30seg
-        curl_setopt( $conection, CURLOPT_RETURNTRANSFER, true ); #Mostra o resultado real da requisição
+        curl_setopt($conection, CURLOPT_URL, $this->url);      #URL
+        curl_setopt($conection, CURLOPT_TIMEOUT, 30);          #Timeout de 30seg
+        curl_setopt($conection, CURLOPT_RETURNTRANSFER, true); #Mostra o resultado real da requisição
 
         // Método
-        curl_setopt( $conection, CURLOPT_CUSTOMREQUEST, $this->method );
+        curl_setopt($conection, CURLOPT_CUSTOMREQUEST, $this->method);
 
         // Tem header?
-        if ( count( $this->headers ) > 0 ) {
-            curl_setopt( $conection, CURLOPT_HTTPHEADER, $this->headers );
+        if (count($this->headers) > 0) {
+            curl_setopt($conection, CURLOPT_HTTPHEADER, $this->headers);
         }
 
         // Tem senha?
-        if ( ! empty( $this->basicUser ) && ! empty( $this->basicPass ) ) {
-            curl_setopt( $conection, CURLOPT_HTTPAUTH, CURLAUTH_BASIC );
-            curl_setopt( $conection, CURLOPT_USERPWD, "{$this->basicUser}:{$this->basicPass}" );
+        if (! empty($this->basicUser) && ! empty($this->basicPass)) {
+            curl_setopt($conection, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+            curl_setopt($conection, CURLOPT_USERPWD, "{$this->basicUser}:{$this->basicPass}");
         }
 
         // Tem Conteúdo de Body?
-        if ( count( $this->bodyContent ) > 0 ) {
-            curl_setopt( $conection, CURLOPT_POST, true );
-            curl_setopt( $conection, CURLOPT_POSTFIELDS, $this->bodyContent );
+        if (! empty($this->bodyContent)) {
+            if (! is_string($this->bodyContent)) {
+                $this->bodyContent = http_build_query($this->bodyContent);
+            }
+            curl_setopt($conection, CURLOPT_POST, true);
+            curl_setopt($conection, CURLOPT_POSTFIELDS, $this->bodyContent);
         }
 
         // Resultado
-        $this->response[ 'body' ] = curl_exec( $conection );
+        $this->response[ 'body' ] = curl_exec($conection);
 
         // Status da resposta
-        $this->response[ 'status' ] = curl_getinfo( $conection, CURLINFO_HTTP_CODE );
+        $this->response[ 'status' ] = curl_getinfo($conection, CURLINFO_HTTP_CODE);
 
-        curl_close( $conection );
+        curl_close($conection);
 
         // Erro?
-        if ( $this->response[ 'status' ] < 200 || $this->response[ 'status' ] > 299 )
+        if ($this->response[ 'status' ] < 200 || $this->response[ 'status' ] > 299) {
             $this->error = 'A requisição retornou um erro ou aviso';
+        }
     }
 
     /**
@@ -118,10 +128,10 @@ class HttpRequest
      *
      * @return boolean
      */
-    public function setUrl( $url )
+    public function setUrl($url)
     {
-        $this->url = filter_var( trim( (string) $url ), FILTER_VALIDATE_URL );
-        if ( empty( $this->url ) ) {
+        $this->url = filter_var(trim((string)$url), FILTER_VALIDATE_URL);
+        if (empty($this->url)) {
             $this->error = 'Informe uma URL válida';
 
             return false;
@@ -142,25 +152,26 @@ class HttpRequest
      *
      * @param string $method Método da requisição
      */
-    public function setMethod( $method = 'GET' )
+    public function setMethod($method = 'GET')
     {
-        $this->method = preg_match( '/^(GET|POST|PUT|PATCH|DELETE)$/', $method ) ? $method : 'GET';
+        $this->method = preg_match('/^(GET|POST|PUT|PATCH|DELETE)$/', $method) ? $method : 'GET';
     }
 
     /**
      * @param array $headers Headers da requisição
      */
-    public function setHeaders( array $headers = null )
+    public function setHeaders(array $headers = null)
     {
         $this->headers = $headers;
     }
 
     /**
-     * @param string $bodyContent Conteúdo a ser enviado.Normalmente uma string em JSON ou XML.
+     * @param string|array $bodyContent Conteúdo a ser enviado.
+     *                                  Normalmente uma string em JSON ou XML ou parametros em array
      */
-    public function setBodyContent( $bodyContent = null )
+    public function setBodyContent($bodyContent = null)
     {
-        $this->bodyContent = (string) $bodyContent;
+        $this->bodyContent = $bodyContent;
     }
 
     /**
@@ -168,9 +179,9 @@ class HttpRequest
      *
      * @param string $basicUser
      */
-    public function setBasicUser( $basicUser = null )
+    public function setBasicUser($basicUser = null)
     {
-        $this->basicUser = (string) $basicUser;
+        $this->basicUser = (string)$basicUser;
     }
 
     /**
@@ -178,9 +189,9 @@ class HttpRequest
      *
      * @param string $basicPass
      */
-    public function setBasicPass( $basicPass = null )
+    public function setBasicPass($basicPass = null)
     {
-        $this->basicPass = (string) $basicPass;
+        $this->basicPass = (string)$basicPass;
     }
 
     /**
@@ -208,7 +219,7 @@ class HttpRequest
     }
 
     /**
-     * @return string
+     * @return string|array
      */
     public function getBodyContent()
     {
