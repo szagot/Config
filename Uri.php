@@ -10,31 +10,31 @@ namespace Config;
 
 class Uri
 {
-    const
-        // Tipos de Retorno
-        RETORNO_OBJ = true,
-        RETORNO_ARRAY = false,
+    // Tipos de Retorno
+    const RETORNO_OBJ = true;
+    const RETORNO_ARRAY = false;
 
-        // Parâmetros de Servidor
-        INCLUI_SERVER = true,
-        NAO_INCLUI_SERVER = false,
-        SERVER_COM_PROTOCOLO = true, # http|https
-        SERVER_SEM_PROTOCOLO = false, # http|https
-        SERVER_COM_URI = true, # Com caminho completo
-        SERVER_SEM_URI = false # Sem caminho completo
-    ;
+    // Parâmetros de Servidor
+    const INCLUI_SERVER = true;
+    const NAO_INCLUI_SERVER = false;
+    const SERVER_COM_PROTOCOLO = true; # http|https
+    const SERVER_SEM_PROTOCOLO = false; # http|https
+    const SERVER_COM_URI = true; # Com caminho completo
+    const SERVER_SEM_URI = false; # Sem caminho completo
 
-    private
-        $uri,
-        $parametros = [ ],
-        $body = [ ],
-        $raiz;
+    private $uri;
+    private $parametros = [];
+    private $body = [];
+    private $raiz;
 
-    public
-        $pagina,
-        $opcao,
-        $detalhe,
-        $outros = [ ];
+    /** @var string 1st param da uri */
+    public $pagina;
+    /** @var string 2nd param da uri */
+    public $opcao;
+    /** @var string 3th param da uri */
+    public $detalhe;
+    /** @var string Others param da uri */
+    public $outros = [];
 
     /**
      * Método Construtor
@@ -42,36 +42,36 @@ class Uri
      * @param string $raiz      Raiz do site
      * @param string $raizLocal Raiz do site quando executado em localhost
      */
-    public function __construct( $raiz = '', $raizLocal = '' )
+    public function __construct($raiz = '', $raizLocal = '')
     {
         // Pega a URI removendo a barra inicial se houver
-        $this->uri = preg_replace( '/^\//', '', urldecode( $_SERVER[ 'REQUEST_URI' ] ) );
+        $this->uri = preg_replace('/^\//', '', urldecode($_SERVER[ 'REQUEST_URI' ]));
 
         // Tenta pegar o body
-        $this->body = @file_get_contents( 'php://input' );
+        $this->body = file_get_contents('php://input') ?? '{}';
 
         // Separa os parâmetros (Query String) da URI, pegando tudo o que não for GET
-        list( $caminho ) = explode( '?', $this->uri );
+        list($caminho) = explode('?', $this->uri);
 
         // Remove a Raiz do caminho local quando informada
-        if ( ! empty( $raizLocal ) && is_string( $raizLocal ) && $this->eLocal() ) {
-            $caminho = preg_replace( '/^' . addcslashes( $raizLocal, '/' ) . '\/?/', '', $caminho );
-            $this->raiz = preg_replace( "/(^\/|\/$)/", '', $raizLocal );
+        if (! empty($raizLocal) && is_string($raizLocal) && $this->eLocal()) {
+            $caminho = preg_replace('/^' . addcslashes($raizLocal, '/') . '\/?/', '', $caminho);
+            $this->raiz = preg_replace("/(^\/|\/$)/", '', $raizLocal);
         }
 
         // Remove a Raiz do caminho quando informada
-        if ( ! empty( $raiz ) && is_string( $raiz ) ) {
-            $caminho = preg_replace( '/^' . addcslashes( $raiz, '/' ) . '\/?/', '', $caminho );
-            $this->raiz = ( $this->raiz ? "$this->raiz/" : '' ) . preg_replace( "/(^\/|\/$)/", '', $raiz );
+        if (! empty($raiz) && is_string($raiz)) {
+            $caminho = preg_replace('/^' . addcslashes($raiz, '/') . '\/?/', '', $caminho);
+            $this->raiz = ($this->raiz ? "$this->raiz/" : '') . preg_replace("/(^\/|\/$)/", '', $raiz);
         }
 
         $this->raiz .= '/';
 
         // Separa a URI nas suas partes principais
-        $caminhoDividido = explode( '/', $caminho );
-        if ( count( $caminhoDividido ) > 0 && is_array( $caminhoDividido ) )
-            foreach ( $caminhoDividido as $index => $caminho )
-                switch ( $index ):
+        $caminhoDividido = explode('/', $caminho);
+        if (count($caminhoDividido) > 0 && is_array($caminhoDividido)) {
+            foreach ($caminhoDividido as $index => $caminho) {
+                switch ($index):
                     case 0:
                         $this->pagina = $caminho;
                         break;
@@ -84,16 +84,19 @@ class Uri
                     default:
                         $this->outros[] = $caminho;
                 endswitch;
+            }
+        }
 
         // Pega os parâmetros get e post se houverem
-        $get = filter_input_array( INPUT_GET );
-        $post = filter_input_array( INPUT_POST );
-        if ( $get && $post )
-            $this->parametros = array_merge( $get, $post );
-        elseif ( $get )
+        $get = filter_input_array(INPUT_GET);
+        $post = filter_input_array(INPUT_POST);
+        if ($get && $post) {
+            $this->parametros = array_merge($get, $post);
+        } elseif ($get) {
             $this->parametros = $get;
-        elseif ( $post )
+        } elseif ($post) {
             $this->parametros = $post;
+        }
     }
 
     /**
@@ -103,7 +106,7 @@ class Uri
      */
     public function eLocal()
     {
-        return preg_match( '/localhost|127\.0\.0\.1/i', $_SERVER[ 'HTTP_HOST' ] );
+        return preg_match('/localhost|127\.0\.0\.1/i', $_SERVER[ 'HTTP_HOST' ]);
     }
 
     /**
@@ -115,22 +118,25 @@ class Uri
      * @return bool O retorno FALSE indica que não foi necessário nenhuma alteração na URL. Evidentemente, se foi
      *              necessária uma alteração, o servidor irá restartar a requisição adicionando ou removendo o WWW.
      */
-    public function addWWW( $add = true )
+    public function addWWW($add = true)
     {
 
         // Se for local ou IP, não faz nada
-        if ( $this->eLocal() || preg_match( '/^([0-9]+\.)+[0-9]+(:[0-9]+)?$/', $_SERVER[ 'HTTP_HOST' ] ) )
+        if ($this->eLocal() || preg_match('/^([0-9]+\.)+[0-9]+(:[0-9]+)?$/', $_SERVER[ 'HTTP_HOST' ])) {
             return false;
+        }
 
         $server = $this->getServer();
 
         // É pra remover o WWW ou pra adicionar?
-        if ( $add ) {
+        if ($add) {
             // Possui o WWW?
-            if ( ! preg_match( '/^\/{0,2}www\./i', $server ) ) {
+            if (! preg_match('/^\/{0,2}www\./i', $server)) {
                 // Tenta redirecionar a URL com WWW
-                if ( ! headers_sent() )
-                    header( 'Location: ' . preg_replace( '/^(https?:\/\/)/', '$1www.', $this->getServer( self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI ) ) );
+                if (! headers_sent()) {
+                    header('Location: ' . preg_replace('/^(https?:\/\/)/', '$1www.',
+                            $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI)));
+                }
 
                 return true;
             }
@@ -139,10 +145,12 @@ class Uri
             return false;
         } else {
             // Não possui o WWW?
-            if ( preg_match( '/^\/{0,2}www\./i', $server ) ) {
+            if (preg_match('/^\/{0,2}www\./i', $server)) {
                 // Tenta redirecionar a URL sem WWW
-                if ( ! headers_sent() )
-                    header( 'Location: ' . preg_replace( '/\/\/www\./i', '//', $this->getServer( self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI ) ) );
+                if (! headers_sent()) {
+                    header('Location: ' . preg_replace('/\/\/www\./i', '//',
+                            $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI)));
+                }
 
                 return true;
             }
@@ -160,7 +168,7 @@ class Uri
      */
     public function removeWWW()
     {
-        return $this->addWWW( false );
+        return $this->addWWW(false);
     }
 
     /**
@@ -177,15 +185,17 @@ class Uri
      *
      * @return array Caminho da URI
      */
-    public function getCaminho( $obj = self::RETORNO_OBJ )
+    public function getCaminho($obj = self::RETORNO_OBJ)
     {
         // Retorno em forma de objeto ou array?
-        if ( $obj == self::RETORNO_ARRAY ) {
-            $caminho = [ ];
-            foreach ( $this as $campo => $valor )
+        if ($obj == self::RETORNO_ARRAY) {
+            $caminho = [];
+            foreach ($this as $campo => $valor) {
                 $caminho[ $campo ] = $valor;
-        } else
+            }
+        } else {
             $caminho = $this;
+        }
 
         return $caminho;
     }
@@ -200,15 +210,17 @@ class Uri
      *
      * @return array Parâmetros da URI
      */
-    public function getParametros( $obj = self::RETORNO_OBJ )
+    public function getParametros($obj = self::RETORNO_OBJ)
     {
         // Retorno em forma de objeto ou array?
-        if ( $obj ) {
+        if ($obj) {
             $parametros = new \stdClass;
-            foreach ( $this->parametros as $campo => $valor )
+            foreach ($this->parametros as $campo => $valor) {
                 $parametros->$campo = $valor;
-        } else
+            }
+        } else {
             $parametros = $this->parametros;
+        }
 
         return $parametros;
     }
@@ -223,26 +235,30 @@ class Uri
      *
      * @return bool|mixed Retorna o valor do campo em caso de sucesso ou FALSE em caso de não existir ou não validar
      */
-    public function getParam( $param, $tipo = FILTER_DEFAULT )
+    public function getParam($param, $tipo = FILTER_DEFAULT)
     {
         // Parâmetro não especificado?
-        if ( ! $param )
+        if (! $param) {
             return false;
+        }
 
         // Verifica se o parâmetro foi postado
-        $post = filter_input( INPUT_POST, (string)$param, $tipo );
-        if ( $post )
+        $post = filter_input(INPUT_POST, (string)$param, $tipo);
+        if ($post) {
             return $post;
+        }
 
         // Verifica se o parâmetro foi informado na query string
-        $get = filter_input( INPUT_GET, (string)$param, $tipo );
-        if ( $get )
+        $get = filter_input(INPUT_GET, (string)$param, $tipo);
+        if ($get) {
             return $get;
+        }
 
         // Se não encontrou pode ser um array
-        $post = filter_input( INPUT_POST, (string)$param, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
-        if ( $post )
+        $post = filter_input(INPUT_POST, (string)$param, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+        if ($post) {
             return $post;
+        }
 
         // Não foi encontrado o parâmetro
         return false;
@@ -255,9 +271,9 @@ class Uri
      *
      * @return array|string Retorna o Body. Por padrão retorna um array, desde que o conteúdo do body seja JSON
      */
-    public function getBody( $json = true )
+    public function getBody($json = true)
     {
-        return $json ? @json_decode( $this->body ) : $this->body;
+        return $json ? @json_decode($this->body) : $this->body;
     }
 
     /**
@@ -278,14 +294,14 @@ class Uri
      *
      * @return string Raiz
      */
-    public function getRaiz( $comServer = self::NAO_INCLUI_SERVER, $comProtoloco = self::SERVER_SEM_PROTOCOLO )
+    public function getRaiz($comServer = self::NAO_INCLUI_SERVER, $comProtoloco = self::SERVER_SEM_PROTOCOLO)
     {
         return
-            ( $comServer
+            ($comServer
                 // Com servidor
-                ? $this->getServer( $comProtoloco )
+                ? $this->getServer($comProtoloco)
                 // Apenas raiz
-                : preg_replace( '/\/+/', '/', ( '/' . $this->raiz ) )
+                : preg_replace('/\/+/', '/', ('/' . $this->raiz))
             );
     }
 
@@ -307,17 +323,17 @@ class Uri
      *
      * @return string
      */
-    public function getServer( $comProtoloco = self::SERVER_SEM_PROTOCOLO, $comUri = self::SERVER_SEM_URI )
+    public function getServer($comProtoloco = self::SERVER_SEM_PROTOCOLO, $comUri = self::SERVER_SEM_URI)
     {
 
-        $protocol = preg_match( '/https/i', $_SERVER[ 'SERVER_PROTOCOL' ] ) ? 'https://' : 'http://';
+        $protocol = preg_match('/https/i', $_SERVER[ 'SERVER_PROTOCOL' ]) ? 'https://' : 'http://';
         $server = $_SERVER[ 'HTTP_HOST' ] . '/';
 
         return
             // Com protocolo?
-            ( $comProtoloco ? $protocol : '//' ) .
+            ($comProtoloco ? $protocol : '//') .
             // Evita duplicidade nas barras
-            preg_replace( '/\/+/', '/', ( $server . ( $comUri ? $this->uri : $this->raiz ) ) );
+            preg_replace('/\/+/', '/', ($server . ($comUri ? $this->uri : $this->raiz)));
 
     }
 
