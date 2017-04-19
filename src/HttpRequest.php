@@ -21,7 +21,7 @@
  * @copyright Copyright (c) 2015
  */
 
-namespace Config;
+namespace Sz\Config;
 
 
 class HttpRequest
