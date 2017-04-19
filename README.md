@@ -22,7 +22,7 @@ Segue um exemplo de um arquivo <i>.htaccess</i>:
 
 Não esqueça de adicionar o comando abaixo no início do script, para não ter que mencionar o namespace das classes toda vez.
 
-    use Config;
+    use Sz\Config;
 
 ### Sessao
     
