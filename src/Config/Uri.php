@@ -308,11 +308,13 @@ class Uri
     /**
      * Pega a Uri completa da requisição
      *
+     * @param bool $full Mostra URI completa, com os parâmetros?
+     *
      * @return mixed
      */
-    public function getUri()
+    public function getUri($full = false)
     {
-        return $this->uri;
+        return $full ? $this->uri : preg_replace('/\?.+$/', '', $this->uri);
     }
 
     /**
