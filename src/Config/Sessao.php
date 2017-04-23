@@ -137,7 +137,7 @@ class Sessao
 
         // Retorna o valor desserializado do parâmetro caso ele exista
         if ($this->chaveExiste($chave)) {
-            return unserialize($_SESSION[ $chave ]);
+            return @unserialize($_SESSION[ $chave ]);
         }
 
         return null;
@@ -386,7 +386,7 @@ class Sessao
         // Lê todas as chaves da sessão
         $retorno = [];
         foreach ($_SESSION as $chave => $valor) {
-            $retorno[ $chave ] = unserialize($valor);
+            $retorno[ $chave ] = @unserialize($valor);
         }
 
         // Retorna os dados desserializados
