@@ -316,7 +316,7 @@ class Sessao
         }
 
         // Salva os dados da sessão codificados
-        $dadosSessao = ($salvarSessao) ? @session_encode() : true;
+        $dadosSessao = ($salvarSessao) ? $this->pegaDadosSessao() : true;
 
         // Destrói a sessão após eliminar as chaves
         $this->eliminaTodasChaves();
@@ -349,6 +349,16 @@ class Sessao
 
         // Retorna verdadeiro em caso de sucesso
         return session_decode($dadosSessao);
+    }
+
+    /**
+     * Pega os dados da sessão
+     *
+     * @return string
+     */
+    public function pegaDadosSessao()
+    {
+        return @session_encode();
     }
 
     /**
