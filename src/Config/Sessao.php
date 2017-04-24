@@ -48,15 +48,18 @@ class Sessao
      * Método Construtor
      * Inicia uma sessão
      *
-     * @param string  $id       Id da sessão
-     * @param integer $tempoMin Duração da sessão em min
+     * @param string  $id          Id da sessão
+     * @param integer $tempoMin    Duração da sessão em min
+     * @param string  $sessionPath Path da Sessão no projeto
      *
      * @throws Exception Não iniciou a sessão
      */
-    private function __construct($id, $tempoMin)
+    private function __construct($id, $tempoMin, $sessionPath = null)
     {
         // Criando pasta da sessão, se não existir
-        $sessionPath = __DIR__ . DIRECTORY_SEPARATOR . 'temp';
+        if (empty($sessionPath)) {
+            $sessionPath = __DIR__ . DIRECTORY_SEPARATOR . 'temp';
+        }
         if (! file_exists($sessionPath)) {
             mkdir($sessionPath);
         }
