@@ -28,16 +28,17 @@ class Sessao
     /**
      * Inicia uma sessão
      *
-     * @param string  $id       Define o ID da sessão
-     * @param integer $tempoMin Duração da sessão em minutos (12h por padrao)
+     * @param string  $id          Define o ID da sessão
+     * @param integer $tempoMin    Duração da sessão em minutos (12h por padrao)
+     * @param string  $sessionPath Path da Sessão no projeto
      *
      * @return Sessao
      */
-    public static function iniciar($id = null, $tempoMin = 720)
+    public static function iniciar($id = null, $tempoMin = 720, $sessionPath = null)
     {
         // Verifica se a classe já foi instanciada
         if (! isset(self::$instance)) {
-            self::$instance = new self($id, $tempoMin);
+            self::$instance = new self($id, $tempoMin, $sessionPath);
         }
 
         // Retorna a instância da classe
