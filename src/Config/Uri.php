@@ -206,7 +206,8 @@ class Uri
      *  URI: http://minhapagina.com/pagina/opcao/detalhe/outros-0/outros-1/?param1=valor
      *      $this->getParametros()->param1 = Pega o valor do param1
      *
-     * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
+     * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ.
+     *             Neste caso será incluído o conteúdo de body
      *
      * @return array Parâmetros da URI
      */
@@ -216,6 +217,11 @@ class Uri
         if ($obj) {
             $parametros = new \stdClass;
             foreach ($this->parametros as $campo => $valor) {
+                $parametros->$campo = $valor;
+            }
+            // Adicionando conteúdo de body
+            $body = $this->getBody();
+            foreach ($body as $campo => $valor) {
                 $parametros->$campo = $valor;
             }
         } else {
@@ -240,6 +246,12 @@ class Uri
         // Parâmetro não especificado?
         if (! $param) {
             return false;
+        }
+
+        // Verifica se tem em Body
+        $body = $this->getBody();
+        if (isset($body->$param)) {
+            return $body->$param;
         }
 
         // Verifica se o parâmetro foi postado
@@ -273,7 +285,7 @@ class Uri
      */
     public function getBody($json = true)
     {
-        return $json ? @json_decode($this->body) : $this->body;
+        return $json ? @json_decode($this->body ?? '[]') : $this->body;
     }
 
     /**
