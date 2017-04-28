@@ -27,21 +27,21 @@ Não esqueça de adicionar o comando abaixo no início do script, para não ter 
 ### Sessao
     
     // Iniciando uma Sessão
-    $sessao = Sessao::iniciar();
+    $session = Sessao::iniciar();
     
     // Gravando na sessão
-    $sessao->attr = 'Exemplo';
+    $session->attr = 'Exemplo';
     
     // Verificando a existencia de um parametro e pegando os dados gravados nele
-    if( $sessao->chaveExiste('attr') )
-        echo $sessao->attr;
+    if( $session->keyExists('attr') )
+        echo $session->attr;
         
     // Destruindo a sessão
-    $sessao->destruir();
+    $session->destroy();
     
     // Não é necessário fechar a sessão ao final do script, posto que isso é automático
     // Mas caso queira fazer isso antes do final do script, basta apenas...
-    $sessao = null;
+    $session = null;
     
 ### Uri
 
