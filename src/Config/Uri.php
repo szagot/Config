@@ -221,8 +221,10 @@ class Uri
             }
             // Adicionando conteúdo de body
             $body = $this->getBody();
-            foreach ($body as $campo => $valor) {
-                $parametros->$campo = $valor;
+            if (! empty($body)) {
+                foreach ($body as $campo => $valor) {
+                    $parametros->$campo = $valor;
+                }
             }
         } else {
             $parametros = $this->parametros;
