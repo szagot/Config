@@ -27,7 +27,7 @@ Não esqueça de adicionar o comando abaixo no início do script, para não ter 
 ### Session
     
     // Iniciando uma Sessão
-    $session = Session::iniciar();
+    $session = Session::start();
     
     // Gravando na sessão
     $session->attr = 'Exemplo';
