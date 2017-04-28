@@ -1,7 +1,7 @@
 # Config
 Classes auxiliares de configuração (do tipo HELPER)
 
-- <b>Sessao</b>: Auxilia no gerenciamento de Sessões
+- <b>Session</b>: Auxilia no gerenciamento de Sessões
 - <b>Uri</b>: Recupera a URI acessada, juntamente com todos os dados enviados (para consumo de APIs e Webservices)
 - <b>Request</b>: Efetua requisições/adições de arquivo no código a partir de uma pasta pública. Esses arquivos podem ser tanto linkados como adicionados miniatuarizados no direto no código.
 - <b>HttpRequest</b>: Efetua requisições Http (para acesso APIs e Webservices)
@@ -24,10 +24,10 @@ Não esqueça de adicionar o comando abaixo no início do script, para não ter 
 
     use Sz\Config;
 
-### Sessao
+### Session
     
     // Iniciando uma Sessão
-    $session = Sessao::iniciar();
+    $session = Session::iniciar();
     
     // Gravando na sessão
     $session->attr = 'Exemplo';
