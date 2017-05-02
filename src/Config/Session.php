@@ -17,6 +17,8 @@ use \Exception;
 
 class Session
 {
+    const UNIQUE_KEY = 'S3ss10n';
+
     /** @var Session */
     private static $instance;
     /** @var string Guarda o nome da sessão sem o hash */
@@ -73,8 +75,15 @@ class Session
         ini_set('session.cookie_lifetime', $timeMin * 60);
         ini_set('session.gc_maxlifetime', $timeMin * 60);
 
+        // Verifica o cookie único
+        if (! isset($_COOKIE[ self::UNIQUE_KEY ])) {
+            $value = self::UNIQUE_KEY . DIRECTORY_SEPARATOR . time();
+            setcookie(self::UNIQUE_KEY, $value, time() + $timeMin * 60);
+            $_COOKIE[ self::UNIQUE_KEY ] = $value;
+        }
+
         // Define o nome da sessão
-        self::$sessionName = 'S3ss10n' . DIRECTORY_SEPARATOR
+        self::$sessionName = $_COOKIE[ self::UNIQUE_KEY ] . DIRECTORY_SEPARATOR
             //  IP do usuário
             . $_SERVER[ 'REMOTE_ADDR' ] . DIRECTORY_SEPARATOR
             . 'TMWxD' . DIRECTORY_SEPARATOR
