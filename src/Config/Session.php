@@ -23,19 +23,17 @@ class Session
     private static $instance;
     /** @var string Guarda o nome da sessão sem o hash */
     private static $sessionName;
-    /** @var bool Verifica se a sessão foi iniciada */
-    private $sessionStarted = false;
 
     /**
      * Inicia uma sessão
      *
      * @param string  $id          Define o ID da sessão
-     * @param integer $timeMin     Duração da sessão em minutos (12h por padrao)
+     * @param integer $timeMin     Duração da sessão em minutos. Se não informado, mantém a mesma
      * @param string  $sessionPath Path da Sessão no projeto
      *
      * @return Session
      */
-    public static function start($id = null, $timeMin = 720, $sessionPath = null)
+    public static function start($id = null, $timeMin = null, $sessionPath = null)
     {
         // Verifica se a classe já foi instanciada
         if (! isset(self::$instance)) {
@@ -56,7 +54,7 @@ class Session
      *
      * @throws Exception Não iniciou a sessão
      */
-    private function __construct($id, $timeMin, $sessionPath = null)
+    private function __construct($id, $timeMin = null, $sessionPath = null)
     {
         // Criando pasta da sessão, se não existir
         if (empty($sessionPath)) {
@@ -71,14 +69,14 @@ class Session
             ini_set('session.save_path', $sessionPath);
         }
 
-        // Setando duração da sessão em segundos
-        ini_set('session.cookie_lifetime', $timeMin * 60);
-        ini_set('session.gc_maxlifetime', $timeMin * 60);
+        // Setando duração da sessão para no máximo 1 semana
+        ini_set('session.cookie_lifetime', 604800);
+        ini_set('session.gc_maxlifetime', 604800);
 
         // Verifica o cookie único
         if (! isset($_COOKIE[ self::UNIQUE_KEY ])) {
             $value = self::UNIQUE_KEY . DIRECTORY_SEPARATOR . time();
-            setcookie(self::UNIQUE_KEY, $value, time() + $timeMin * 60);
+            setcookie(self::UNIQUE_KEY, $value, time() + 604800);
             $_COOKIE[ self::UNIQUE_KEY ] = $value;
         }
 
@@ -103,9 +101,14 @@ class Session
             throw new Exception('Não foi possível iniciar a sessão', 100);
         }
 
-        $this->setTimeMin($timeMin);
+        // Somente seta a duração da sessão se tiver sido informada
+        if (! isset($_SESSION[ 'timeMin' ]) || ! empty($timeMin)) {
+            $this->setTimeMin($timeMin);
+        }
+
+        // Inicia a sessão
         $this->setStartSession();
-        $this->sessionStarted = true;
+        $_SESSION[ 'sessionStarted' ] = true;
     }
 
     /**
@@ -121,7 +124,7 @@ class Session
     public function __set($key, $value)
     {
         // Verifica se a sessão foi iniciada
-        if (! $this->sessionStarted || preg_match('/^(timeMin|startedAt|endedAt)$/', $key)) {
+        if (! $this->verify() || preg_match('/^(timeMin|startedAt|endedAt|sessionStarted)$/', $key)) {
             return false;
         }
 
@@ -143,7 +146,7 @@ class Session
     public function __get($key)
     {
         // Verifica se a sessão foi iniciada
-        if (! $this->sessionStarted || preg_match('/^(timeMin|startedAt|endedAt)$/', $key)) {
+        if (! $this->verify() || preg_match('/^(timeMin|startedAt|endedAt|sessionStarted)$/', $key)) {
             return null;
         }
 
@@ -162,7 +165,6 @@ class Session
     public function __destruct()
     {
         session_write_close();
-        $this->sessionStarted = false;
         self::$instance = null;
     }
 
@@ -170,6 +172,8 @@ class Session
      * Seta a quantidade de tempo de duração da sessão em minutos
      *
      * @param int $timeMin Tempo em minutos
+     *
+     * @return $this
      */
     public function setTimeMin($timeMin = 0)
     {
@@ -179,12 +183,16 @@ class Session
         }
 
         $_SESSION[ 'timeMin' ] = (int)$timeMin;
+
+        return $this;
     }
 
     /**
      * Inicia/Reinicia a contagem de tempo.
      *
      * @param bool $restart É para forçar reinicio da contagem?
+     *
+     * @return $this
      */
     public function setStartSession($restart = false)
     {
@@ -199,6 +207,8 @@ class Session
             $_SESSION[ 'startedAt' ] = time();
             $_SESSION[ 'endedAt' ] = strtotime("+{$_SESSION[ 'timeMin' ]} minutes");
         }
+
+        return $this;
     }
 
     /**
@@ -238,7 +248,7 @@ class Session
      */
     private function verify()
     {
-        if (! $this->sessionStarted) {
+        if (! isset($_SESSION[ 'sessionStarted' ])) {
             return false;
         }
 
@@ -301,7 +311,7 @@ class Session
     public function destroyAllKeys()
     {
         // Verifica se a sessão foi iniciada
-        if (! $this->sessionStarted) {
+        if (! isset($_SESSION[ 'sessionStarted' ])) {
             return false;
         }
 
