@@ -81,7 +81,8 @@ class Session
         }
 
         // Define o nome da sessão
-        self::$sessionName = $_COOKIE[ self::UNIQUE_KEY ] . DIRECTORY_SEPARATOR
+        self::$sessionName =
+            (($_SERVER[ 'HTTP_HOST' ] != 'localhost') ? $_COOKIE[ self::UNIQUE_KEY ] : 'local') . DIRECTORY_SEPARATOR
             //  IP do usuário
             . $_SERVER[ 'REMOTE_ADDR' ] . DIRECTORY_SEPARATOR
             . 'TMWxD' . DIRECTORY_SEPARATOR
