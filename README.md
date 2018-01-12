@@ -124,11 +124,12 @@ Não esqueça de adicionar o comando abaixo no início do script, para não ter 
 
     // Enviando requisição do tipo POST com Auth Basic
     $envioExemplo = new HttpRequest( $uri, 'POST', $header );
-    $envioExemplo->setBodyContent(json_encode( $body ));
-    $envioExemplo->setBasicUser('usuario');
-    $envioExemplo->setBasicPass('senha');
-    $envioExemplo->execute();
+    $envioExemplo
+        ->setBodyContent(json_encode( $body ))
+        ->setBasicUser('usuario')
+        ->setBasicPass('senha')
+        ->execute();
     
     // Mostrando retorno
-    var_dump( $envioExemplo->getResponse() );
+    var_dump( $envioExemplo->getResponse()->getBody() );
     

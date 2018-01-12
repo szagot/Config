@@ -33,6 +33,7 @@ class HttpRequest
         $bodyContent,
         $basicUser,
         $basicPass,
+        /** HttpRequestResponse */
         $response,
         $error;
 
@@ -62,6 +63,7 @@ class HttpRequest
         $this->setBodyContent($bodyContent);
         $this->setBasicUser($authUser);
         $this->setBasicPass($authPass);
+        $this->response = new HttpRequestResponse();
     }
 
     /**
@@ -80,19 +82,19 @@ class HttpRequest
         curl_setopt($conection, CURLOPT_CUSTOMREQUEST, $this->method);
 
         // Tem header?
-        if (count($this->headers) > 0) {
+        if (count($this->headers ?? []) > 0) {
             curl_setopt($conection, CURLOPT_HTTPHEADER, $this->headers);
         }
 
         // Tem senha?
-        if (! empty($this->basicUser) && ! empty($this->basicPass)) {
+        if (!empty($this->basicUser) && !empty($this->basicPass)) {
             curl_setopt($conection, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
             curl_setopt($conection, CURLOPT_USERPWD, "{$this->basicUser}:{$this->basicPass}");
         }
 
         // Tem Conteúdo de Body?
-        if (! empty($this->bodyContent)) {
-            if (! is_string($this->bodyContent)) {
+        if (!empty($this->bodyContent)) {
+            if (!is_string($this->bodyContent)) {
                 $this->bodyContent = http_build_query($this->bodyContent);
             }
             curl_setopt($conection, CURLOPT_POST, true);
@@ -100,17 +102,19 @@ class HttpRequest
         }
 
         // Resultado
-        $this->response[ 'body' ] = curl_exec($conection);
+        $this->response->setBody(curl_exec($conection));
 
         // Status da resposta
-        $this->response[ 'status' ] = curl_getinfo($conection, CURLINFO_HTTP_CODE);
+        $this->response->setStatus(curl_getinfo($conection, CURLINFO_HTTP_CODE));
 
         curl_close($conection);
 
         // Erro?
-        if ($this->response[ 'status' ] < 200 || $this->response[ 'status' ] > 299) {
+        if ($this->response->getStatus() < 200 || $this->response->getStatus() > 299) {
             $this->error = 'A requisição retornou um erro ou aviso';
         }
+
+        return $this;
     }
 
     /**
@@ -126,7 +130,7 @@ class HttpRequest
     /**
      * @param string $url URL/URI da requisição
      *
-     * @return boolean
+     * @return HttpRequest
      */
     public function setUrl($url)
     {
@@ -134,12 +138,12 @@ class HttpRequest
         if (empty($this->url)) {
             $this->error = 'Informe uma URL válida';
 
-            return false;
+            return $this;
         }
 
         $this->error = null;
 
-        return true;
+        return $this;
     }
 
     /**
@@ -151,47 +155,67 @@ class HttpRequest
      *      DELETE - Deleção
      *
      * @param string $method Método da requisição
+     *
+     * @return HttpRequest
      */
     public function setMethod($method = 'GET')
     {
         $this->method = preg_match('/^(GET|POST|PUT|PATCH|DELETE)$/', $method) ? $method : 'GET';
+
+        return $this;
     }
 
     /**
      * @param array $headers Headers da requisição
+     *
+     * @return HttpRequest
      */
     public function setHeaders(array $headers = null)
     {
         $this->headers = $headers;
+
+        return $this;
     }
 
     /**
      * @param string|array $bodyContent Conteúdo a ser enviado.
      *                                  Normalmente uma string em JSON ou XML ou parametros em array
+     *
+     * @return HttpRequest
      */
     public function setBodyContent($bodyContent = null)
     {
         $this->bodyContent = $bodyContent;
+
+        return $this;
     }
 
     /**
      * Seta o Usuário de uma autenticação do tipo BASIC
      *
      * @param string $basicUser
+     *
+     * @return HttpRequest
      */
     public function setBasicUser($basicUser = null)
     {
         $this->basicUser = (string)$basicUser;
+
+        return $this;
     }
 
     /**
      * Seta a Senha de uma autenticação do tipo BASIC
      *
      * @param string $basicPass
+     *
+     * @return HttpRequest
      */
     public function setBasicPass($basicPass = null)
     {
         $this->basicPass = (string)$basicPass;
+
+        return $this;
     }
 
     /**
@@ -245,21 +269,11 @@ class HttpRequest
     /**
      * Pega a resposta da requisição em caso de sucesso.
      *
-     * @return array No seguinte formado:
-     *               [
-     *                  'error' => 'Com possíveis erros da requisição ou null em caso negativo',
-     *                  'response' => [
-     *                      'body' => 'Corpo da resposta',
-     *                      'status' => 200 // HTTP Status da requisição
-     *                  ]
-     *               ]
+     * @return HttpRequestResponse
      */
     public function getResponse()
     {
-        return [
-            'error'    => $this->error,
-            'response' => $this->response
-        ];
+        return $this->response;
     }
 
 }
