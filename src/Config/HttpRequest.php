@@ -134,7 +134,7 @@ class HttpRequest
      */
     public function setUrl($url)
     {
-        $this->url = filter_var(trim((string)$url), FILTER_VALIDATE_URL);
+        $this->url = trim((string)$url);
         if (empty($this->url)) {
             $this->error = 'Informe uma URL válida';
 
