@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Classe para Manipulação de URI's
  *
@@ -45,7 +46,7 @@ class Uri
     public function __construct($raiz = '', $raizLocal = '')
     {
         // Pega a URI removendo a barra inicial se houver
-        $this->uri = preg_replace('/^\//', '', urldecode($_SERVER[ 'REQUEST_URI' ]));
+        $this->uri = preg_replace('/^\//', '', urldecode($_SERVER['REQUEST_URI']));
 
         // Tenta pegar o body
         $this->body = file_get_contents('php://input') ?? '{}';
@@ -54,13 +55,13 @@ class Uri
         list($caminho) = explode('?', $this->uri);
 
         // Remove a Raiz do caminho local quando informada
-        if (! empty($raizLocal) && is_string($raizLocal) && $this->eLocal()) {
+        if (!empty($raizLocal) && is_string($raizLocal) && $this->eLocal()) {
             $caminho = preg_replace('/^' . addcslashes($raizLocal, '/') . '\/?/', '', $caminho);
             $this->raiz = preg_replace("/(^\/|\/$)/", '', $raizLocal);
         }
 
         // Remove a Raiz do caminho quando informada
-        if (! empty($raiz) && is_string($raiz)) {
+        if (!empty($raiz) && is_string($raiz)) {
             $caminho = preg_replace('/^' . addcslashes($raiz, '/') . '\/?/', '', $caminho);
             $this->raiz = ($this->raiz ? "$this->raiz/" : '') . preg_replace("/(^\/|\/$)/", '', $raiz);
         }
@@ -106,7 +107,7 @@ class Uri
      */
     public function eLocal()
     {
-        return preg_match('/localhost|127\.0\.0\.1/i', $_SERVER[ 'HTTP_HOST' ]);
+        return preg_match('/localhost|127\.0\.0\.1/i', $_SERVER['HTTP_HOST']);
     }
 
     /**
@@ -122,7 +123,7 @@ class Uri
     {
 
         // Se for local ou IP, não faz nada
-        if ($this->eLocal() || preg_match('/^([0-9]+\.)+[0-9]+(:[0-9]+)?$/', $_SERVER[ 'HTTP_HOST' ])) {
+        if ($this->eLocal() || preg_match('/^([0-9]+\.)+[0-9]+(:[0-9]+)?$/', $_SERVER['HTTP_HOST'])) {
             return false;
         }
 
@@ -131,11 +132,14 @@ class Uri
         // É pra remover o WWW ou pra adicionar?
         if ($add) {
             // Possui o WWW?
-            if (! preg_match('/^\/{0,2}www\./i', $server)) {
+            if (!preg_match('/^\/{0,2}www\./i', $server)) {
                 // Tenta redirecionar a URL com WWW
-                if (! headers_sent()) {
-                    header('Location: ' . preg_replace('/^(https?:\/\/)/', '$1www.',
-                            $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI)));
+                if (!headers_sent()) {
+                    header('Location: ' . preg_replace(
+                        '/^(https?:\/\/)/',
+                        '$1www.',
+                        $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI)
+                    ));
                 }
 
                 return true;
@@ -147,9 +151,12 @@ class Uri
             // Não possui o WWW?
             if (preg_match('/^\/{0,2}www\./i', $server)) {
                 // Tenta redirecionar a URL sem WWW
-                if (! headers_sent()) {
-                    header('Location: ' . preg_replace('/\/\/www\./i', '//',
-                            $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI)));
+                if (!headers_sent()) {
+                    header('Location: ' . preg_replace(
+                        '/\/\/www\./i',
+                        '//',
+                        $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI)
+                    ));
                 }
 
                 return true;
@@ -191,7 +198,7 @@ class Uri
         if ($obj == self::RETORNO_ARRAY) {
             $caminho = [];
             foreach ($this as $campo => $valor) {
-                $caminho[ $campo ] = $valor;
+                $caminho[$campo] = $valor;
             }
         } else {
             $caminho = $this;
@@ -221,7 +228,7 @@ class Uri
             }
             // Adicionando conteúdo de body
             $body = $this->getBody();
-            if (! empty($body)) {
+            if (!empty($body)) {
                 foreach ($body as $campo => $valor) {
                     $parametros->$campo = $valor;
                 }
@@ -246,7 +253,7 @@ class Uri
     public function getParam($param, $tipo = FILTER_DEFAULT)
     {
         // Parâmetro não especificado?
-        if (! $param) {
+        if (!$param) {
             return false;
         }
 
@@ -283,7 +290,7 @@ class Uri
      *
      * @param bool $json Converte o conteúdo de JSON para array
      *
-     * @return array|string Retorna o Body. Por padrão retorna um array, desde que o conteúdo do body seja JSON
+     * @return object|string Retorna o Body. Por padrão retorna um array, desde que o conteúdo do body seja JSON
      */
     public function getBody($json = true)
     {
@@ -297,7 +304,7 @@ class Uri
      */
     public function getMethod()
     {
-        return $_SERVER[ 'REQUEST_METHOD' ];
+        return $_SERVER['REQUEST_METHOD'];
     }
 
     /**
@@ -310,13 +317,11 @@ class Uri
      */
     public function getRaiz($comServer = self::NAO_INCLUI_SERVER, $comProtoloco = self::SERVER_SEM_PROTOCOLO)
     {
-        return
-            ($comServer
-                // Com servidor
-                ? $this->getServer($comProtoloco)
-                // Apenas raiz
-                : preg_replace('/\/+/', '/', ('/' . $this->raiz))
-            );
+        return ($comServer
+            // Com servidor
+            ? $this->getServer($comProtoloco)
+            // Apenas raiz
+            : preg_replace('/\/+/', '/', ('/' . $this->raiz)));
     }
 
     /**
@@ -332,6 +337,27 @@ class Uri
     }
 
     /**
+     * Pega todos os parametros enviados no header da requisição
+     *
+     * @return array
+     */
+    public function getAllHeaders()
+    {
+        return getallheaders();
+    }
+
+    /**
+     * Pegar um parametro específico do header da requisição
+     *
+     * @param string $header
+     * @return mixed
+     */
+    public function getHeader(string $header)
+    {
+        return $this->getAllHeaders()[$header] ?? null;
+    }
+
+    /**
      * Pega o servidor da URL
      *
      * @param boolean $comProtoloco Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
@@ -342,15 +368,13 @@ class Uri
     public function getServer($comProtoloco = self::SERVER_SEM_PROTOCOLO, $comUri = self::SERVER_SEM_URI)
     {
 
-        $protocol = preg_match('/https/i', $_SERVER[ 'SERVER_PROTOCOL' ]) ? 'https://' : 'http://';
-        $server = $_SERVER[ 'HTTP_HOST' ] . '/';
+        $protocol = preg_match('/https/i', $_SERVER['SERVER_PROTOCOL']) ? 'https://' : 'http://';
+        $server = $_SERVER['HTTP_HOST'] . '/';
 
         return
             // Com protocolo?
             ($comProtoloco ? $protocol : '//') .
             // Evita duplicidade nas barras
             preg_replace('/\/+/', '/', ($server . ($comUri ? $this->uri : $this->raiz)));
-
     }
-
 }

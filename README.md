@@ -81,7 +81,13 @@ Não esqueça de adicionar o comando abaixo no início do script, para não ter 
     
     // Para uso em APIs: Pegando Body da requisição
     echo $uri->getBody();
-    
+
+    // Para uso em APIs: Pegando o header da requisição
+    echo $uri->getHeader('authorization');
+
+    // Para uso em APIs: Pegando todos os headers da requisição
+    var_dump($uri->getAllHeaders());
+
 ### Request
 
     /**
