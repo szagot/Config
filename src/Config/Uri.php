@@ -111,6 +111,52 @@ class Uri
     }
 
     /**
+     * Retorna a primeira camada do caminho
+     * /page/firstParam/secondParam/nthParams
+     *
+     * @return string
+     */
+    public function getPage()
+    {
+        return $this->pagina;
+    }
+
+    /**
+     * Retorna a segunda camada do caminho
+     * /page/firstParam/secondParam/nthParams
+     * 
+     * @return string
+     */
+    public function getFirstUrlParam()
+    {
+        return $this->opcao;
+    }
+
+    /**
+     * Retorna a terceira camada do caminho
+     * /page/firstParam/secondParam/nthParams
+     *
+     * @return string
+     */
+    public function getSecondUrlParam()
+    {
+        return $this->detalhe;
+    }
+
+    /**
+     * Retorna da quarta posição em diante
+     * /page/firstParam/secondParam/nthParams
+     * 
+     * @param integer $index
+     *
+     * @return string
+     */
+    public function getNthUrlParam(int $index)
+    {
+        return $this->outros[$index] ?? null;
+    }
+
+    /**
      * Adiciona (por padrão) ou remove o WWW da URL
      * Este método deve ser chamado ANTES de qualquer saída em tela
      *
