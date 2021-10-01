@@ -23,10 +23,23 @@ class Uri
     const SERVER_COM_URI = true; # Com caminho completo
     const SERVER_SEM_URI = false; # Sem caminho completo
 
+    // Parametros para arquivos enviados
+    const FILE_NAME = 'name';
+    const FILE_TYPE = 'type';
+    const FILE_TMP_PATH_NAME = 'tmp_name';
+    const FILE_ERROR = 'error';
+    const FILE_SIZE = 'size';
+    const FILE_SIZE_BYTE = 1;
+    // Medidas de retorno
+    const FILE_SIZE_KB = 1024;
+    const FILE_SIZE_MB = 1024 * 1024;
+    const FILE_SIZE_GB = 1024 * 1024 * 1024;
+
     private $uri;
     private $parametros = [];
     private $body = [];
     private $raiz;
+    private $files = [];
 
     /** @var string 1st param da uri */
     public $pagina;
@@ -97,6 +110,11 @@ class Uri
             $this->parametros = $get;
         } elseif ($post) {
             $this->parametros = $post;
+        }
+
+        // Pega os arquivos se houverem
+        if (isset($_FILES)) {
+            $this->files = $_FILES;
         }
     }
 
@@ -284,6 +302,82 @@ class Uri
         }
 
         return $parametros;
+    }
+
+    /**
+     * Retorna o conteúdo de files
+     *
+     * @param mixed $name Se informado, devolve apenas o file com o name informado
+     * @param string $field
+     * @return mixed
+     */
+    public function getFiles($name = null, string $field = null)
+    {
+        if ($name) {
+            return $field ? $this->files[$name][$field] : $this->files[$name];
+        }
+
+        return $this->files;
+    }
+
+    /**
+     * Devolve o nome do arquivo enviado
+     *
+     * @param mixed $name
+     * @return string
+     */
+    public function getFileName($name)
+    {
+        return $this->files[$name][self::FILE_NAME] ?? null;
+    }
+
+    /**
+     * Devolve o caminho temporário do arquivo enviado
+     *
+     * @param mixed $name
+     * @return string
+     */
+    public function getFileTmpPath($name)
+    {
+        return $this->files[$name][self::FILE_TMP_PATH_NAME] ?? null;
+    }
+
+    /**
+     * Devolve o tipo do arquivo enviado
+     *
+     * @param mixed $name
+     * @return string
+     */
+    public function getFileType($name)
+    {
+        return $this->files[$name][self::FILE_TYPE] ?? null;
+    }
+
+    /**
+     * Devolve o tamanho do arquivo enviado em bytes (ou na unidade informada)
+     *
+     * @param mixed $name
+     * @param integer $name
+     * @return string
+     */
+    public function getFileSize($name, int $un = self::FILE_SIZE_BYTE)
+    {
+        if ($un < 1) {
+            $un = 1;
+        }
+
+        return ($this->files[$name][self::FILE_SIZE] ?? 0) / $un;
+    }
+
+    /**
+     * Devolve o erro do arquivo enviado
+     *
+     * @param mixed $name
+     * @return string
+     */
+    public function getFileError($name)
+    {
+        return $this->files[$name][self::FILE_ERROR] ?? null;
     }
 
     /**
