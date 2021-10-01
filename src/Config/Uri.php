@@ -321,6 +321,17 @@ class Uri
     }
 
     /**
+     * O arquivo informado existe?
+     *
+     * @param mixed $name
+     * @return boolean
+     */
+    public function isFileExists($name)
+    {
+        return isset($this->files[$name]);
+    }
+
+    /**
      * Devolve o nome do arquivo enviado
      *
      * @param mixed $name
