@@ -411,7 +411,7 @@ class Uri
         // Verifica se tem em Body
         $body = $this->getBody();
         if (isset($body->$param)) {
-            return $body->$param;
+            return ($tipo == FILTER_VALIDATE_BOOLEAN) ? $this->sanatizeBoolean($body->$param) : $body->$param;
         }
 
         // Verifica se o parâmetro foi informado na query string
@@ -438,7 +438,7 @@ class Uri
         $postVars = [];
         $this->parse_raw_http_request($postVars);
         if (isset($postVars[$param])) {
-            return $postVars[$param];
+            return ($tipo == FILTER_VALIDATE_BOOLEAN) ? $this->sanatizeBoolean($postVars[$param]) : $postVars[$param];
         }
 
         // Não foi encontrado o parâmetro
@@ -536,6 +536,22 @@ class Uri
             ($comProtoloco ? $protocol : '//') .
             // Evita duplicidade nas barras
             preg_replace('/\/+/', '/', ($server . ($comUri ? $this->uri : $this->raiz)));
+    }
+
+    private function sanatizeBoolean($bool)
+    {
+        $trueValidate = [1, 'sim', 'true', 'yes'];
+        $falseValidate = [0, 'não', 'nao', 'false', 'no'];
+
+        if (in_array($bool, $trueValidate)) {
+            return true;
+        }
+
+        if (in_array($bool, $falseValidate)) {
+            return false;
+        }
+
+        return null;
     }
 
     private function parse_raw_http_request(array &$a_data)
