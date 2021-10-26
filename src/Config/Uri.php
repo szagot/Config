@@ -414,22 +414,30 @@ class Uri
             return $body->$param;
         }
 
-        // Verifica se o parâmetro foi postado
-        $post = filter_input(INPUT_POST, (string)$param, $tipo);
-        if ($post) {
-            return $post;
-        }
-
         // Verifica se o parâmetro foi informado na query string
         $get = filter_input(INPUT_GET, (string)$param, $tipo);
         if ($get) {
             return $get;
         }
 
-        // Se não encontrou pode ser um array
-        $post = filter_input(INPUT_POST, (string)$param, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
-        if ($post) {
-            return $post;
+        if ($this->getMethod() == 'POST') {
+            // Verifica se o parâmetro foi postado
+            $post = filter_input(INPUT_POST, (string)$param, $tipo);
+            if ($post) {
+                return $post;
+            }
+
+            // Se não encontrou pode ser um array
+            $post = filter_input(INPUT_POST, (string)$param, FILTER_DEFAULT, FILTER_REQUIRE_ARRAY);
+            if ($post) {
+                return $post;
+            }
+        }
+
+        // Verifica se é de outro tipo
+        parse_str(file_get_contents("php://input"), $postVars);
+        if (isset($postVars[$param])) {
+            return $postVars[$param];
         }
 
         // Não foi encontrado o parâmetro
