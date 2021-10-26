@@ -436,7 +436,7 @@ class Uri
 
         // Verifica se é de outro tipo
         $postVars = [];
-        $this->parse_raw_http_request($postVars);
+        $this->parseRawHTTPRequest($postVars);
         if (isset($postVars[$param])) {
             return ($tipo == FILTER_VALIDATE_BOOLEAN) ? $this->sanatizeBoolean($postVars[$param]) : $postVars[$param];
         }
@@ -538,10 +538,19 @@ class Uri
             preg_replace('/\/+/', '/', ($server . ($comUri ? $this->uri : $this->raiz)));
     }
 
+    /**
+     * Converte valores humanos para positivo e negativo para booleano
+     *
+     * @return bool|null
+     */
     private function sanatizeBoolean($bool)
     {
-        $trueValidate = [1, 'sim', 'true', 'yes'];
-        $falseValidate = [0, 'não', 'nao', 'false', 'no'];
+        $trueValidate = [1, 'sim', 'true', 'yes', 'positivo', 'aceito', 'allowed', 'allow', 'permitir', 'ok'];
+        $falseValidate = [0, 'não', 'nao', 'false', 'no', 'negativo', 'negado', 'denied', 'deny', 'negar', 'not'];
+
+        if (is_string($bool)) {
+            $bool = trim(mb_strtolower($bool, 'UTF-8'));
+        }
 
         if (in_array($bool, $trueValidate)) {
             return true;
@@ -554,7 +563,11 @@ class Uri
         return null;
     }
 
-    private function parse_raw_http_request(array &$a_data)
+    /**
+     * Pega chamadas do tipo PUT, PATCH, etc...
+     *  Fonte: https://stackoverflow.com/questions/5483851/manually-parse-raw-multipart-form-data-data-with-php/5488449#5488449
+     */
+    private function parseRawHTTPRequest(array &$a_data)
     {
         // read incoming data
         $input = file_get_contents('php://input');
