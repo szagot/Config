@@ -503,6 +503,10 @@ class Uri
      */
     public function getAllHeaders()
     {
+        if (function_exists('getallheaders')) {
+            return getallheaders();
+        }
+        
         $headers = [];
         foreach ($_SERVER as $name => $value) {
             if (substr($name, 0, 5) == 'HTTP_') {
