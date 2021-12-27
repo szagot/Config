@@ -584,6 +584,11 @@ class Uri
 
         // grab multipart boundary from content type header
         preg_match('/boundary=(.*)$/', $_SERVER['CONTENT_TYPE'], $matches);
+
+        if(!isset($matches[1])){
+            return;
+        }
+
         $boundary = $matches[1];
 
         // split content by boundary and get rid of last -- element
