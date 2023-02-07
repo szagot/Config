@@ -254,7 +254,7 @@ class Uri
      *
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
      *
-     * @return array Caminho da URI
+     * @return array|\stdClass Caminho da URI
      */
     public function getCaminho($obj = self::RETORNO_OBJ)
     {
@@ -280,7 +280,7 @@ class Uri
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ.
      *             Neste caso será incluído o conteúdo de body
      *
-     * @return array Parâmetros da URI
+     * @return array|\stdClass Parâmetros da URI
      */
     public function getParametros($obj = self::RETORNO_OBJ)
     {
