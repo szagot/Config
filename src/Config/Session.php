@@ -75,16 +75,15 @@ class Session
 
         // Verifica o cookie único
         if (! isset($_COOKIE[ self::UNIQUE_KEY ])) {
-            $value = self::UNIQUE_KEY . DIRECTORY_SEPARATOR . time();
+            $value = self::UNIQUE_KEY . DIRECTORY_SEPARATOR . 604800;
             setcookie(self::UNIQUE_KEY, $value, time() + 604800);
             $_COOKIE[ self::UNIQUE_KEY ] = $value;
         }
 
         // Define o nome da sessão
         self::$sessionName =
-            (($_SERVER[ 'HTTP_HOST' ] != 'localhost') ? $_COOKIE[ self::UNIQUE_KEY ] : 'local') . DIRECTORY_SEPARATOR
             //  IP do usuário
-            . $_SERVER[ 'REMOTE_ADDR' ] . DIRECTORY_SEPARATOR
+            $_SERVER[ 'REMOTE_ADDR' ] . DIRECTORY_SEPARATOR
             . 'TMWxD' . DIRECTORY_SEPARATOR
             // Dados do navegador do usuário
             . $_SERVER[ 'HTTP_USER_AGENT' ] . DIRECTORY_SEPARATOR
