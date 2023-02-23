@@ -84,7 +84,7 @@ class Session
         self::$sessionName =
             //  IP do usuário
             $_SERVER[ 'REMOTE_ADDR' ] . DIRECTORY_SEPARATOR
-            . 'TMWxD' . DIRECTORY_SEPARATOR
+            . 'Szga-Ot' . DIRECTORY_SEPARATOR
             // Dados do navegador do usuário
             . $_SERVER[ 'HTTP_USER_AGENT' ] . DIRECTORY_SEPARATOR
             // ID da sessão caso seja definido
