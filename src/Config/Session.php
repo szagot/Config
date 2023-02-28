@@ -54,7 +54,7 @@ class Session
      *
      * @throws Exception Não iniciou a sessão
      */
-    private function __construct($id, $timeMin = null, $sessionPath = null)
+    private function __construct($id, $timeMin = null, $sessionPath = null, $useCookie = false)
     {
         // Criando pasta da sessão, se não existir
         if (empty($sessionPath)) {
@@ -75,13 +75,18 @@ class Session
 
         // Verifica o cookie único
         if (! isset($_COOKIE[ self::UNIQUE_KEY ])) {
-            $value = self::UNIQUE_KEY . DIRECTORY_SEPARATOR . 604800;
+            $value = self::UNIQUE_KEY . DIRECTORY_SEPARATOR . time();
             setcookie(self::UNIQUE_KEY, $value, time() + 604800);
             $_COOKIE[ self::UNIQUE_KEY ] = $value;
         }
 
+        if($useCookie){
+            self::$sessionName =
+                (($_SERVER[ 'HTTP_HOST' ] != 'localhost') ? $_COOKIE[ self::UNIQUE_KEY ] : 'local') . DIRECTORY_SEPARATOR;
+        }
+
         // Define o nome da sessão
-        self::$sessionName =
+        self::$sessionName .=
             //  IP do usuário
             $_SERVER[ 'REMOTE_ADDR' ] . DIRECTORY_SEPARATOR
             . 'Szga-Ot' . DIRECTORY_SEPARATOR
