@@ -30,6 +30,7 @@ class Session
      * @param string  $id          Define o ID da sessão
      * @param integer $timeMin     Duração da sessão em minutos. Se não informado, mantém a mesma
      * @param string  $sessionPath Path da Sessão no projeto
+     * @param bool    $useCookie   Usar cookie? Em geral não é necessário, exceto em casos de maior segurnça
      *
      * @return Session
      */
