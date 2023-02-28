@@ -33,11 +33,11 @@ class Session
      *
      * @return Session
      */
-    public static function start($id = null, $timeMin = null, $sessionPath = null)
+    public static function start($id = null, $timeMin = null, $sessionPath = null, $useCookie = false)
     {
         // Verifica se a classe já foi instanciada
         if (! isset(self::$instance)) {
-            self::$instance = new self($id, $timeMin, $sessionPath);
+            self::$instance = new self($id, $timeMin, $sessionPath, $useCookie);
         }
 
         // Retorna a instância da classe
