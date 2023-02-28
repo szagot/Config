@@ -50,7 +50,7 @@ class HttpRequest
      */
     public function __construct(
         $url = null,
-        $method = null,
+        $method = 'GET',
         array $headers = null,
         $bodyContent = null,
         $authType = null,
