@@ -52,6 +52,7 @@ class Session
      * @param string  $id          Id da sessão
      * @param integer $timeMin     Duração da sessão em min
      * @param string  $sessionPath Path da Sessão no projeto
+     * @param bool    $useCookie   Usar cookie? Em geral não é necessário, exceto em casos de maior segurnça
      *
      * @throws Exception Não iniciou a sessão
      */
