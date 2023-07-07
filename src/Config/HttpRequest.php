@@ -24,6 +24,8 @@
 namespace Sz\Config;
 
 
+use CURLFile;
+
 class HttpRequest
 {
     private
@@ -31,6 +33,7 @@ class HttpRequest
         $method,
         $headers,
         $bodyContent,
+        $file,
         $basicUser,
         $basicPass,
         /** HttpRequestResponse */
@@ -77,6 +80,9 @@ class HttpRequest
         curl_setopt($conection, CURLOPT_URL, $this->url);      #URL
         curl_setopt($conection, CURLOPT_TIMEOUT, 30);          #Timeout de 30seg
         curl_setopt($conection, CURLOPT_RETURNTRANSFER, true); #Mostra o resultado real da requisição
+        curl_setopt($conection, CURLOPT_MAXREDIRS, 5);
+        curl_setopt($conection, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($conection, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
 
         // Método
         curl_setopt($conection, CURLOPT_CUSTOMREQUEST, $this->method);
@@ -274,6 +280,40 @@ class HttpRequest
     public function getResponse()
     {
         return $this->response;
+    }
+
+    /**
+     * @return CURLFile|null
+     */
+    public function getFile(): ?CURLFile
+    {
+        return $this->file;
+    }
+
+    /**
+     * Salva o arquivo em formato CURLFile para envio
+     *
+     * @param string $filePath
+     *
+     * @return HttpRequest
+     */
+    public function setFile(string $filePath): HttpRequest
+    {
+        $contentFile = @file_get_contents($filePath);
+        if(empty($contentFile)){
+            return $this;
+        }
+
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_buffer($finfo, $contentFile);
+        finfo_close($finfo);
+
+        $file = new CURLFile($filePath);
+        $file->setMimeType($mime);
+
+        $this->file = $file;
+
+        return $this;
     }
 
 }
