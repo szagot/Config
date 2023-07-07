@@ -100,7 +100,7 @@ class HttpRequest
 
         // Tem Conteúdo de Body?
         if (!empty($this->bodyContent)) {
-            if (!is_string($this->bodyContent)) {
+            if (!is_string($this->bodyContent) && !$this->getFile()) {
                 $this->bodyContent = http_build_query($this->bodyContent);
             }
             curl_setopt($conection, CURLOPT_POST, true);
