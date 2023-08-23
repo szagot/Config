@@ -291,7 +291,12 @@ class HttpRequest
     }
 
     /**
-     * Salva o arquivo em formato CURLFile para envio
+     * Salva o arquivo em formato para envio
+     *
+     * Exemplo de uso:
+     * $this
+     *      ->setFile($filePath, $fileName)
+     *      ->setBodyContent([ 'file' => $this->>getFile() ])
      *
      * @param string $filePath
      *
@@ -312,5 +317,4 @@ class HttpRequest
 
         return $this;
     }
-
 }
