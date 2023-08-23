@@ -297,10 +297,10 @@ class HttpRequest
      *
      * @return HttpRequest
      */
-    public function setFile(string $filePath): HttpRequest
+    public function setFile(string $filePath, string $fileName = null): HttpRequest
     {
         $contentFile = @file_get_contents($filePath);
-        if(empty($contentFile)){
+        if (empty($contentFile)) {
             return $this;
         }
 
@@ -308,10 +308,7 @@ class HttpRequest
         $mime = finfo_buffer($finfo, $contentFile);
         finfo_close($finfo);
 
-        $file = new CURLFile($filePath);
-        $file->setMimeType($mime);
-
-        $this->file = $file;
+        $this->file = curl_file_create($filePath, $mime, $fileName);
 
         return $this;
     }
