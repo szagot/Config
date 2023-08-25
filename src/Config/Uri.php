@@ -314,7 +314,7 @@ class Uri
     public function getFiles($name = null, string $field = null)
     {
         if ($name) {
-            return $field ? $this->files[$name][$field] : $this->files[$name];
+            return $field ? ($this->files[$name][$field] ?? null) : ($this->files[$name] ?? null);
         }
 
         return $this->files;
