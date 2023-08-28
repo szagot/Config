@@ -582,6 +582,10 @@ class Uri
         // read incoming data
         $input = file_get_contents('php://input');
 
+        if(!isset($_SERVER['CONTENT_TYPE'])){
+            return;
+        }
+
         // grab multipart boundary from content type header
         preg_match('/boundary=(.*)$/', $_SERVER['CONTENT_TYPE'], $matches);
 
