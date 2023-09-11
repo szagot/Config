@@ -40,6 +40,7 @@ class Uri
     private $body = [];
     private $raiz;
     private $files = [];
+    private $requestIp = null;
 
     /** @var string 1st param da uri */
     public $pagina;
@@ -56,16 +57,19 @@ class Uri
      * @param string $raiz      Raiz do site
      * @param string $raizLocal Raiz do site quando executado em localhost
      */
-    public function __construct($raiz = '', $raizLocal = '')
+    public function __construct(string $raiz = '', string $raizLocal = '')
     {
         // Pega a URI removendo a barra inicial se houver
-        $this->uri = preg_replace('/^\//', '', urldecode($_SERVER['REQUEST_URI']));
+        $this->uri = preg_replace('/^\//', '', urldecode($_SERVER['REQUEST_URI'] ?? ''));
+
+        // Pega o IP de quem está fazendo a requisição
+        $this->requestIp = $_SERVER['REMOTE_ADDR'] ?? null;
 
         // Tenta pegar o body
         $this->body = file_get_contents('php://input') ?? '{}';
 
         // Separa os parâmetros (Query String) da URI, pegando tudo o que não for GET
-        list($caminho) = explode('?', $this->uri);
+        [$caminho] = explode('?', $this->uri);
 
         // Remove a Raiz do caminho local quando informada
         if (!empty($raizLocal) && is_string($raizLocal) && $this->eLocal()) {
@@ -123,7 +127,7 @@ class Uri
      *
      * @return boolean
      */
-    public function eLocal()
+    public function eLocal(): bool
     {
         return preg_match('/localhost|127\.0\.0\.1/i', $_SERVER['HTTP_HOST']);
     }
@@ -134,7 +138,7 @@ class Uri
      *
      * @return string
      */
-    public function getPage()
+    public function getPage(): ?string
     {
         return $this->pagina;
     }
@@ -142,10 +146,10 @@ class Uri
     /**
      * Retorna a segunda camada do caminho
      * /page/firstParam/secondParam/nthParams
-     * 
+     *
      * @return string
      */
-    public function getFirstUrlParam()
+    public function getFirstUrlParam(): ?string
     {
         return $this->opcao;
     }
@@ -156,7 +160,7 @@ class Uri
      *
      * @return string
      */
-    public function getSecondUrlParam()
+    public function getSecondUrlParam(): ?string
     {
         return $this->detalhe;
     }
@@ -164,12 +168,12 @@ class Uri
     /**
      * Retorna da quarta posição em diante
      * /page/firstParam/secondParam/nthParams
-     * 
+     *
      * @param integer $index
      *
      * @return string
      */
-    public function getNthUrlParam(int $index)
+    public function getNthUrlParam(int $index): ?string
     {
         return $this->outros[$index] ?? null;
     }
@@ -183,7 +187,7 @@ class Uri
      * @return bool O retorno FALSE indica que não foi necessário nenhuma alteração na URL. Evidentemente, se foi
      *              necessária uma alteração, o servidor irá restartar a requisição adicionando ou removendo o WWW.
      */
-    public function addWWW($add = true)
+    public function addWWW(bool $add = true): bool
     {
 
         // Se for local ou IP, não faz nada
@@ -200,10 +204,10 @@ class Uri
                 // Tenta redirecionar a URL com WWW
                 if (!headers_sent()) {
                     header('Location: ' . preg_replace(
-                        '/^(https?:\/\/)/',
-                        '$1www.',
-                        $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI)
-                    ));
+                            '/^(https?:\/\/)/',
+                            '$1www.',
+                            $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI)
+                        ));
                 }
 
                 return true;
@@ -217,10 +221,10 @@ class Uri
                 // Tenta redirecionar a URL sem WWW
                 if (!headers_sent()) {
                     header('Location: ' . preg_replace(
-                        '/\/\/www\./i',
-                        '//',
-                        $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI)
-                    ));
+                            '/\/\/www\./i',
+                            '//',
+                            $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI)
+                        ));
                 }
 
                 return true;
@@ -237,7 +241,7 @@ class Uri
      *
      * Obs.: Atalho para $this->addWWW(), porém com parâmetros para remoção do WWW
      */
-    public function removeWWW()
+    public function removeWWW(): bool
     {
         return $this->addWWW(false);
     }
@@ -254,9 +258,9 @@ class Uri
      *
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ
      *
-     * @return array|\stdClass Caminho da URI
+     * @return mixed Caminho da URI
      */
-    public function getCaminho($obj = self::RETORNO_OBJ)
+    public function getCaminho(bool $obj = self::RETORNO_OBJ)
     {
         // Retorno em forma de objeto ou array?
         if ($obj == self::RETORNO_ARRAY) {
@@ -280,9 +284,9 @@ class Uri
      * @param $obj boolean O retorno deve ser em Objeto ou Array? Padrão = RETORNO_OBJ.
      *             Neste caso será incluído o conteúdo de body
      *
-     * @return array|\stdClass Parâmetros da URI
+     * @return mixed Parâmetros da URI
      */
-    public function getParametros($obj = self::RETORNO_OBJ)
+    public function getParametros(bool $obj = self::RETORNO_OBJ)
     {
         // Retorno em forma de objeto ou array?
         if ($obj) {
@@ -307,11 +311,12 @@ class Uri
     /**
      * Retorna o conteúdo de files
      *
-     * @param mixed $name Se informado, devolve apenas o file com o name informado
-     * @param string $field
+     * @param string|null $name Se informado, devolve apenas o file com o name informado
+     * @param string|null $field
+     *
      * @return mixed
      */
-    public function getFiles($name = null, string $field = null)
+    public function getFiles(string $name = null, string $field = null)
     {
         if ($name) {
             return $field ? ($this->files[$name][$field] ?? null) : ($this->files[$name] ?? null);
@@ -324,9 +329,10 @@ class Uri
      * O arquivo informado existe?
      *
      * @param mixed $name
+     *
      * @return boolean
      */
-    public function isFileExists($name)
+    public function isFileExists($name): bool
     {
         return isset($this->files[$name]);
     }
@@ -335,9 +341,10 @@ class Uri
      * Devolve o nome do arquivo enviado
      *
      * @param mixed $name
+     *
      * @return string
      */
-    public function getFileName($name)
+    public function getFileName($name): ?string
     {
         return $this->files[$name][self::FILE_NAME] ?? null;
     }
@@ -346,9 +353,10 @@ class Uri
      * Devolve o caminho temporário do arquivo enviado
      *
      * @param mixed $name
+     *
      * @return string
      */
-    public function getFileTmpPath($name)
+    public function getFileTmpPath($name): ?string
     {
         return $this->files[$name][self::FILE_TMP_PATH_NAME] ?? null;
     }
@@ -357,9 +365,10 @@ class Uri
      * Devolve o tipo do arquivo enviado
      *
      * @param mixed $name
+     *
      * @return string
      */
-    public function getFileType($name)
+    public function getFileType($name): ?string
     {
         return $this->files[$name][self::FILE_TYPE] ?? null;
     }
@@ -367,11 +376,12 @@ class Uri
     /**
      * Devolve o tamanho do arquivo enviado em bytes (ou na unidade informada)
      *
-     * @param mixed $name
-     * @param integer $name
+     * @param string|null $name
+     * @param int         $un
+     *
      * @return string
      */
-    public function getFileSize($name, int $un = self::FILE_SIZE_BYTE)
+    public function getFileSize(string $name = null, int $un = self::FILE_SIZE_BYTE): ?string
     {
         if ($un < 1) {
             $un = 1;
@@ -383,10 +393,11 @@ class Uri
     /**
      * Devolve o erro do arquivo enviado
      *
-     * @param mixed $name
+     * @param string $name
+     *
      * @return string
      */
-    public function getFileError($name)
+    public function getFileError(string $name): ?string
     {
         return $this->files[$name][self::FILE_ERROR] ?? null;
     }
@@ -401,7 +412,7 @@ class Uri
      *
      * @return bool|mixed Retorna o valor do campo em caso de sucesso ou FALSE em caso de não existir ou não validar
      */
-    public function getParam($param, $tipo = FILTER_DEFAULT)
+    public function getParam(string $param, int $tipo = FILTER_DEFAULT)
     {
         // Parâmetro não especificado?
         if (!$param) {
@@ -452,7 +463,7 @@ class Uri
      *
      * @return object|string Retorna o Body. Por padrão retorna um array, desde que o conteúdo do body seja JSON
      */
-    public function getBody($json = true)
+    public function getBody(bool $json = true)
     {
         return $json ? @json_decode($this->body ?? '[]') : $this->body;
     }
@@ -462,21 +473,23 @@ class Uri
      *
      * @return string
      */
-    public function getMethod()
+    public function getMethod(): string
     {
-        return $_SERVER['REQUEST_METHOD'];
+        return $_SERVER['REQUEST_METHOD'] ?? 'GET';
     }
 
     /**
      * Pega a raiz da URI, com ou sem servidor
      *
-     * @param boolean $comServer    Deve ir com servidor?
-     * @param boolean $comProtoloco Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
+     * @param bool $comServer    Deve ir com servidor?
+     * @param bool $comProtoloco Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
      *
      * @return string Raiz
      */
-    public function getRaiz($comServer = self::NAO_INCLUI_SERVER, $comProtoloco = self::SERVER_SEM_PROTOCOLO)
-    {
+    public function getRaiz(
+        bool $comServer = self::NAO_INCLUI_SERVER,
+        bool $comProtoloco = self::SERVER_SEM_PROTOCOLO
+    ): string {
         return ($comServer
             // Com servidor
             ? $this->getServer($comProtoloco)
@@ -491,22 +504,30 @@ class Uri
      *
      * @return mixed
      */
-    public function getUri($full = false)
+    public function getUri(bool $full = false): ?string
     {
         return $full ? $this->uri : preg_replace('/\?.+$/', '', $this->uri);
     }
 
     /**
+     * @return string|null
+     */
+    public function getRequestIp(): ?string
+    {
+        return $this->requestIp;
+    }
+
+    /**
      * Pega todos os parametros enviados no header da requisição
      *
-     * @return array
+     * @return mixed
      */
     public function getAllHeaders()
     {
         if (function_exists('getallheaders')) {
             return getallheaders();
         }
-        
+
         $headers = [];
         foreach ($_SERVER as $name => $value) {
             if (substr($name, 0, 5) == 'HTTP_') {
@@ -520,9 +541,10 @@ class Uri
      * Pegar um parametro específico do header da requisição
      *
      * @param string $header
+     *
      * @return mixed
      */
-    public function getHeader(string $header)
+    public function getHeader(string $header): ?string
     {
         return $this->getAllHeaders()[$header] ?? null;
     }
@@ -530,13 +552,15 @@ class Uri
     /**
      * Pega o servidor da URL
      *
-     * @param boolean $comProtoloco Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
-     * @param boolean $comUri       Deve ir com o restante da URI?
+     * @param bool $comProtoloco Deve ir com protocolo (http|https) ou apenas a indicação de servidor (//)?
+     * @param bool $comUri       Deve ir com o restante da URI?
      *
      * @return string
      */
-    public function getServer($comProtoloco = self::SERVER_SEM_PROTOCOLO, $comUri = self::SERVER_SEM_URI)
-    {
+    public function getServer(
+        bool $comProtoloco = self::SERVER_SEM_PROTOCOLO,
+        bool $comUri = self::SERVER_SEM_URI
+    ): string {
 
         $protocol = preg_match('/https/i', $_SERVER['SERVER_PROTOCOL']) ? 'https://' : 'http://';
         $server = $_SERVER['HTTP_HOST'] . '/';
@@ -553,7 +577,7 @@ class Uri
      *
      * @return bool|null
      */
-    private function sanatizeBoolean($bool)
+    private function sanatizeBoolean($bool): ?bool
     {
         $trueValidate = [1, 'sim', 'true', 'yes', 'positivo', 'aceito', 'allowed', 'allow', 'permitir', 'ok'];
         $falseValidate = [0, 'não', 'nao', 'false', 'no', 'negativo', 'negado', 'denied', 'deny', 'negar', 'not'];
@@ -575,21 +599,22 @@ class Uri
 
     /**
      * Pega chamadas do tipo PUT, PATCH, etc...
-     *  Fonte: https://stackoverflow.com/questions/5483851/manually-parse-raw-multipart-form-data-data-with-php/5488449#5488449
+     *  Fonte:
+     *  https://stackoverflow.com/questions/5483851/manually-parse-raw-multipart-form-data-data-with-php/5488449#5488449
      */
     private function parseRawHTTPRequest(array &$a_data)
     {
         // read incoming data
         $input = file_get_contents('php://input');
 
-        if(!isset($_SERVER['CONTENT_TYPE'])){
+        if (!isset($_SERVER['CONTENT_TYPE'])) {
             return;
         }
 
         // grab multipart boundary from content type header
         preg_match('/boundary=(.*)$/', $_SERVER['CONTENT_TYPE'], $matches);
 
-        if(!isset($matches[1])){
+        if (!isset($matches[1])) {
             return;
         }
 
@@ -601,17 +626,17 @@ class Uri
 
         // loop data blocks
         foreach ($a_blocks as $id => $block) {
-            if (empty($block))
+            if (empty($block)) {
                 continue;
+            }
 
             // you'll have to var_dump $block to understand this and maybe replace \n or \r with a visibile char
 
             // parse uploaded files
-            if (strpos($block, 'application/octet-stream') !== FALSE) {
+            if (strpos($block, 'application/octet-stream') !== false) {
                 // match "name", then everything after "stream" (optional) except for prepending newlines 
                 preg_match("/name=\"([^\"]*)\".*stream[\n|\r]+([^\n\r].*)?$/s", $block, $matches);
-            }
-            // parse all other fields
+            } // parse all other fields
             else {
                 // match "name" and optional value in between newline sequences
                 preg_match('/name=\"([^\"]*)\"[\n|\r]+([^\n\r].*)?\r$/s', $block, $matches);

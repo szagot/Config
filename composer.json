@@ -8,9 +8,11 @@
     }
   ],
   "require": {
-    "php": ">= 7.1",
+    "php": ">=8.0",
     "ext-curl": "*",
-    "ext-fileinfo": "*"
+    "ext-fileinfo": "*",
+    "ext-json": "*",
+    "ext-mbstring": "*"
   },
   "autoload": {
     "psr-4": {
