@@ -72,13 +72,17 @@ class HttpRequest
     /**
      * Efetua a requisição
      * A resposta pode ser obtida utilizando o método getResponse()
+     *
+     * @param int $timeout
+     *
+     * @return HttpRequest
      */
-    public function execute()
+    public function execute(int $timeout = 30)
     {
         // Incia a requisição setando parâmetros básicos
         $conection = curl_init();
         curl_setopt($conection, CURLOPT_URL, $this->url);      #URL
-        curl_setopt($conection, CURLOPT_TIMEOUT, 30);          #Timeout de 30seg
+        curl_setopt($conection, CURLOPT_TIMEOUT, $timeout);          #Timeout de 30seg
         curl_setopt($conection, CURLOPT_RETURNTRANSFER, true); #Mostra o resultado real da requisição
         curl_setopt($conection, CURLOPT_MAXREDIRS, 5);
         curl_setopt($conection, CURLOPT_FOLLOWLOCATION, true);
