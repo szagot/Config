@@ -1,4 +1,9 @@
 # Config
+
+> **DEPRECATED!** Utilize no lugar [szagot/helper](https://github.com/szagot/helper)
+
+---
+
 Classes auxiliares de configuração (do tipo HELPER)
 
 - **Session**: Auxilia no gerenciamento de Sessões
