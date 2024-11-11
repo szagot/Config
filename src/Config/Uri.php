@@ -206,7 +206,7 @@ class Uri
                     header('Location: ' . preg_replace(
                             '/^(https?:\/\/)/',
                             '$1www.',
-                            $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI)
+                            $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI),
                         ));
                 }
 
@@ -223,7 +223,7 @@ class Uri
                     header('Location: ' . preg_replace(
                             '/\/\/www\./i',
                             '//',
-                            $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI)
+                            $this->getServer(self::SERVER_COM_PROTOCOLO, self::SERVER_COM_URI),
                         ));
                 }
 
@@ -457,6 +457,19 @@ class Uri
     }
 
     /**
+     * Parâmetro foi informado?
+     * @param string $param
+     *
+     * @return bool
+     */
+    public function hasParam(string $param): bool
+    {
+        $postVars = [];
+        $this->parseRawHTTPRequest($postVars);
+        return isset($this->getBody()->$param) || isset($_REQUEST[$param]) || isset($postVars[$param]);
+    }
+
+    /**
      * Retorna o conteúdo do Body em caso de requisição POST via http request
      *
      * @param bool $json Converte o conteúdo de JSON para array
@@ -488,7 +501,7 @@ class Uri
      */
     public function getRaiz(
         bool $comServer = self::NAO_INCLUI_SERVER,
-        bool $comProtoloco = self::SERVER_SEM_PROTOCOLO
+        bool $comProtoloco = self::SERVER_SEM_PROTOCOLO,
     ): string {
         return ($comServer
             // Com servidor
@@ -559,7 +572,7 @@ class Uri
      */
     public function getServer(
         bool $comProtoloco = self::SERVER_SEM_PROTOCOLO,
-        bool $comUri = self::SERVER_SEM_URI
+        bool $comUri = self::SERVER_SEM_URI,
     ): string {
 
         $protocol = preg_match('/https/i', $_SERVER['SERVER_PROTOCOL']) ? 'https://' : 'http://';
